@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --wood-dark: #120d09;
@@ -502,7 +503,7 @@
         <div class="station-sub">Реестръ почтово-голубиныхъ сообщенiй</div>
       </div>
       <div class="header-ctrls">
-        <div class="station-clock" id="wallClock">--:--:--</div>
+        <div class="station-clock" id="wallClock">00:00:00</div>
         <button class="btn-expedition" id="openModalBtn">Экспедицiя</button>
       </div>
     </header>
@@ -515,7 +516,11 @@
         <div>Осталось</div>
         <div>Состоянiе</div>
       </div>
-      <div class="board-body" id="boardBody"></div>
+      <div class="board-body" id="boardBody">
+        <div style="padding: 24px; text-align: center; color: var(--parchment-dim); font-size: 13px; font-style: italic;">
+          Опросъ почтоваго архива...
+        </div>
+      </div>
     </div>
   </div>
 
@@ -561,7 +566,7 @@
               <input type="datetime-local" id="targetDateTime" class="input-ctrl" required>
             </div>
 
-            <button type="submit" class="btn-submit">Внести въ росписанiе</button>
+            <button type="submit" class="btn-submit" id="submitFlightBtn">Внести въ росписанiе</button>
           </form>
 
           <hr style="border: 0; height: 1px; background: var(--border-panel);">
@@ -576,51 +581,53 @@
   </div>
 
   <script>
+    // Часы запускаются первыми без зависимостей
+    function updateWallClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      const el = document.getElementById("wallClock");
+      if (el) el.textContent = `${h}:${m}:${s}`;
+    }
+    updateWallClock();
+    setInterval(updateWallClock, 1000);
+
     const ACCESS_CODE = "7272";
-    const DB_KEY = "MCGO_RB_VINTAGE_STATION_V8";
+    const SUPABASE_URL = "https://ocnaegpwgjkalgxblvin.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_31OYuvcWEvUoK45svj1nRg_JVRKRCy0";
 
-    const defaultFlights = [
-      {
-        id: "FL-101",
-        direction: "in",
-        city: "СЛОВАКИЯ",
-        breed: "Почтовый Гривунъ",
-        created: Date.now() - 1000 * 300,
-        arrive: Date.now() - 1000 * 30 // Уже сел
-      },
-      {
-        id: "FL-102",
-        direction: "out",
-        city: "СЛОВАКИЯ",
-        breed: "Башкирскiй Турманъ",
-        created: Date.now() - 1000 * 15, // Взлет
-        arrive: Date.now() + (14 * 3600 + 2 * 60) * 1000 // 14ч 02м
-      },
-      {
-        id: "FL-103",
-        direction: "out",
-        city: "УФА",
-        breed: "Бѣлый Сизый",
-        created: Date.now() - 1000 * 240,
-        arrive: Date.now() + (138 * 3600 + 45 * 60) * 1000 // В пути
-      }
-    ];
+    let supabaseClient = null;
+    let cachedFlights = [];
 
-    function loadFlights() {
-      const data = localStorage.getItem(DB_KEY);
-      if (!data) {
-        localStorage.setItem(DB_KEY, JSON.stringify(defaultFlights));
-        return defaultFlights;
+    // Безопасная инициализация Supabase
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
-      try {
-        return JSON.parse(data);
-      } catch (e) {
-        return defaultFlights;
-      }
+    } catch (err) {
+      console.error("Supabase load error:", err);
     }
 
-    function saveFlights(data) {
-      localStorage.setItem(DB_KEY, JSON.stringify(data));
+    async function fetchFlights() {
+      if (!supabaseClient) {
+        document.getElementById("boardBody").innerHTML = `<div style="padding: 24px; text-align: center; color: var(--ink-red); font-size: 13px;">Связь съ облачной канцелярией отсутствуетъ. Проверьте сѣть.</div>`;
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from('flights')
+        .select('*')
+        .order('arrive', { ascending: true });
+
+      if (error) {
+        console.error("Fetch error:", error);
+        document.getElementById("boardBody").innerHTML = `<div style="padding: 24px; text-align: center; color: var(--ink-red); font-size: 13px;">Ошибка чтенiя: ${error.message}</div>`;
+        return;
+      }
+
+      cachedFlights = data || [];
+      renderBoard();
     }
 
     function formatArrivalDate(timestamp) {
@@ -628,7 +635,7 @@
         "января", "февраля", "марта", "апреля", "мая", "июня",
         "июля", "августа", "сентября", "октября", "ноября", "декабря"
       ];
-      const d = new Date(timestamp);
+      const d = new Date(Number(timestamp));
       const day = d.getDate();
       const month = months[d.getMonth()];
       const hours = String(d.getHours()).padStart(2, '0');
@@ -666,22 +673,22 @@
     }
 
     function renderBoard() {
-      const flights = loadFlights();
       const boardBody = document.getElementById("boardBody");
       const delList = document.getElementById("delList");
+      if (!boardBody || !delList) return;
 
       boardBody.innerHTML = "";
       delList.innerHTML = "";
 
-      if (flights.length === 0) {
+      if (cachedFlights.length === 0) {
         boardBody.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--parchment-dim); font-size: 13px; font-style: italic;">Нѣтъ открытыхъ трактовъ въ росписанiи</div>`;
         delList.innerHTML = `<div style="text-align: center; color: var(--parchment-dim); font-size: 11px; padding: 4px;">Списокъ пустъ</div>`;
         return;
       }
 
-      flights.forEach(f => {
-        const remaining = Math.max(0, f.arrive - Date.now());
-        const status = getStatus(f.created, f.arrive);
+      cachedFlights.forEach(f => {
+        const remaining = Math.max(0, Number(f.arrive) - Date.now());
+        const status = getStatus(Number(f.created), Number(f.arrive));
         const route = f.direction === "out" ? `МЦГО РБ — ${f.city}` : `${f.city} — МЦГО РБ`;
         const arrivalDateStr = formatArrivalDate(f.arrive);
 
@@ -713,20 +720,15 @@
       });
     }
 
-    window.deleteEntry = function(id) {
-      let flights = loadFlights();
-      flights = flights.filter(item => item.id !== id);
-      saveFlights(flights);
-      renderBoard();
+    window.deleteEntry = async function(id) {
+      if (!supabaseClient) return;
+      const { error } = await supabaseClient.from('flights').delete().eq('id', id);
+      if (error) {
+        alert("Ошибка отзыва: " + error.message);
+        return;
+      }
+      fetchFlights();
     };
-
-    function updateWallClock() {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById("wallClock").textContent = `${h}:${m}:${s}`;
-    }
 
     // Модальное окно
     const modalWindow = document.getElementById("modalWindow");
@@ -787,9 +789,13 @@
       if (e.key === "Enter") authenticate();
     };
 
-    // Добавление рейса
-    document.getElementById("addFlightForm").onsubmit = function(e) {
+    // Отправка формы
+    document.getElementById("addFlightForm").onsubmit = async function(e) {
       e.preventDefault();
+      if (!supabaseClient) {
+        alert("Нѣтъ связи съ облакомъ!");
+        return;
+      }
 
       const direction = document.getElementById("flightDirection").value;
       const city = document.getElementById("flightCity").value.trim().toUpperCase();
@@ -815,22 +821,35 @@
         arrive: arriveTimestamp
       };
 
-      const flights = loadFlights();
-      flights.unshift(newEntry);
-      saveFlights(flights);
+      const submitBtn = document.getElementById("submitFlightBtn");
+      submitBtn.disabled = true;
+
+      const { error } = await supabaseClient.from('flights').insert([newEntry]);
+      submitBtn.disabled = false;
+
+      if (error) {
+        alert("Ошибка записи: " + error.message);
+        return;
+      }
 
       document.getElementById("flightCity").value = "";
       document.getElementById("flightBreed").value = "";
-      renderBoard();
       modalWindow.classList.remove("active");
+      fetchFlights();
     };
 
-    renderBoard();
-    updateWallClock();
-    setInterval(() => {
-      updateWallClock();
-      renderBoard();
-    }, 1000);
+    // Подписка Realtime
+    if (supabaseClient) {
+      supabaseClient
+        .channel('public:flights')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'flights' }, () => {
+          fetchFlights();
+        })
+        .subscribe();
+    }
+
+    fetchFlights();
+    setInterval(renderBoard, 1000);
   </script>
 </body>
 </html>
