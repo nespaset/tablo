@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>МЦГО РБ — Реестръ Голубиныхъ Сообщенiй</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --wood-dark: #120d09;
+      --wood-frame: #241910;
+      --brass: #c99e52;
+      --brass-bright: #e7be74;
+      --brass-dim: #7a5d2d;
+      --parchment: #ede0c8;
+      --parchment-dim: #9e8f76;
+      --border-panel: #3d2b1d;
+      
+      --status-takeoff: #78a890;
+      --status-flight: #c2b59b;
+      --status-approach: #d68945;
+      --status-landed: #5e9c64;
+      --ink-red: #a3382c;
+
+      --font-title: 'Playfair Display', Georgia, serif;
+      --font-body: 'Cormorant Garamond', Georgia, serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--wood-dark);
+      color: var(--parchment);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 8px 6px;
+      background-image: 
+        radial-gradient(ellipse at 50% 10%, rgba(201, 158, 82, 0.08) 0%, transparent 80%),
+        repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 2px, transparent 2px, transparent 6px);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Верхняя доска ведомства */
+    .station-header {
+      background: var(--wood-frame);
+      border: 2px solid var(--brass-dim);
+      border-radius: 4px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(0, 0, 0, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .station-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 5%;
+      right: 5%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--brass), transparent);
+    }
+
+    .station-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .station-title {
+      font-family: var(--font-title);
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      color: var(--brass-bright);
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      line-height: 1.15;
+    }
+
+    .station-sub {
+      font-size: 12px;
+      color: var(--parchment-dim);
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    .header-ctrls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .station-clock {
+      background: #090604;
+      color: var(--brass);
+      border: 1px solid var(--brass-dim);
+      padding: 3px 6px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: 2px;
+      font-family: var(--font-title);
+      white-space: nowrap;
+    }
+
+    .btn-expedition {
+      background: #2b1e14;
+      color: var(--brass-bright);
+      border: 1px solid var(--brass);
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--font-body);
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border-radius: 2px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-expedition:active {
+      background: var(--brass);
+      color: #120d09;
+    }
+
+    /* Рама главного реестра */
+    .board-frame {
+      background: #0c0806;
+      border: 2px solid var(--border-panel);
+      border-radius: 3px;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95);
+      overflow: hidden;
+    }
+
+    .board-header-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 130px 140px;
+      background: #19120c;
+      border-bottom: 2px solid var(--border-panel);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brass-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .board-body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Строка почтовой книги */
+    .board-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 130px 140px;
+      align-items: center;
+      padding: 10px 12px;
+      background: #140d09;
+      border-bottom: 1px solid #24170e;
+      position: relative;
+    }
+
+    .board-row:nth-child(even) {
+      background: #0f0a07;
+    }
+
+    .col-message {
+      color: var(--parchment);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .col-breed {
+      color: var(--parchment-dim);
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .col-time {
+      color: var(--brass);
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .col-time .t-unit {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--brass-dim);
+      margin-left: 1px;
+      margin-right: 3px;
+      text-transform: lowercase;
+    }
+
+    .col-status {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .st-takeoff { color: var(--status-takeoff); }
+    .st-flight { color: var(--status-flight); }
+    .st-approach { color: var(--status-approach); animation: oil-flicker 1.8s infinite; }
+    .st-landed { color: var(--status-landed); }
+
+    @keyframes oil-flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    /* Адаптация под смартфон */
+    @media (max-width: 600px) {
+      .station-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 10px;
+      }
+
+      .station-title-wrap {
+        text-align: left;
+      }
+
+      .station-title {
+        font-size: 15px;
+      }
+
+      .header-ctrls {
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .board-header-row {
+        display: none;
+      }
+
+      .board-row {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 10px;
+      }
+
+      .row-top, .row-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        width: 100%;
+      }
+
+      .col-message {
+        font-size: 14px;
+        flex: 1;
+        padding-right: 4px;
+      }
+
+      .col-breed {
+        font-size: 12px;
+        flex: 1;
+        padding-right: 4px;
+      }
+
+      .col-time {
+        font-size: 13px;
+        text-align: right;
+        min-width: 95px;
+      }
+
+      .col-status {
+        font-size: 11px;
+        text-align: right;
+        min-width: 95px;
+      }
+    }
+
+    /* Модальная Экспедицiя */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 5, 3, 0.88);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      z-index: 100;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #1c130c;
+      border: 2px solid var(--brass-dim);
+      border-radius: 4px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.95);
+      overflow: hidden;
+    }
+
+    .modal-top {
+      background: #281b11;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-panel);
+    }
+
+    .modal-title {
+      font-family: var(--font-title);
+      font-size: 13px;
+      color: var(--brass-bright);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      color: var(--brass-dim);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-content {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .auth-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .pin-field {
+      background: #0d0906;
+      border: 1px solid var(--brass-dim);
+      color: var(--brass-bright);
+      font-family: var(--font-title);
+      font-size: 18px;
+      text-align: center;
+      padding: 6px;
+      letter-spacing: 8px;
+      outline: none;
+      border-radius: 2px;
+    }
+
+    .pin-field:focus {
+      border-color: var(--brass);
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .field-group label {
+      font-size: 11px;
+      color: var(--parchment-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-ctrl {
+      background: #0e0906;
+      border: 1px solid var(--border-panel);
+      color: var(--parchment);
+      font-family: var(--font-body);
+      padding: 6px 8px;
+      font-size: 14px;
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .input-ctrl:focus {
+      border-color: var(--brass);
+    }
+
+    .time-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-submit {
+      background: #2b1d12;
+      color: var(--brass-bright);
+      border: 1px solid var(--brass);
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+      padding: 8px;
+      cursor: pointer;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .btn-submit:active {
+      background: var(--brass);
+      color: #120d09;
+    }
+
+    .delete-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 120px;
+      overflow-y: auto;
+      background: #0d0805;
+      border: 1px solid var(--border-panel);
+      padding: 4px;
+      border-radius: 2px;
+    }
+
+    .delete-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #18100a;
+      padding: 4px 6px;
+      font-size: 12px;
+    }
+
+    .btn-del {
+      background: transparent;
+      border: 1px solid var(--ink-red);
+      color: #e57373;
+      font-family: var(--font-body);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 5px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .btn-del:active {
+      background: var(--ink-red);
+      color: #fff;
+    }
+
+    .err-text {
+      color: #e57373;
+      font-size: 11px;
+      font-style: italic;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header class="station-header">
+      <div class="station-title-wrap">
+        <div class="station-title">МЦГО РБ // СТЕРЛИТАМАКЪ</div>
+        <div class="station-sub">Реестръ почтово-голубиныхъ сообщенiй</div>
+      </div>
+      <div class="header-ctrls">
+        <div class="station-clock" id="wallClock">--:--:--</div>
+        <button class="btn-expedition" id="openModalBtn">Экспедицiя</button>
+      </div>
+    </header>
+
+    <div class="board-frame">
+      <div class="board-header-row">
+        <div>Сообщенiе</div>
+        <div>Порода борта</div>
+        <div>Въ пути осталось</div>
+        <div>Состоянiе трассы</div>
+      </div>
+      <div class="board-body" id="boardBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalWindow">
+    <div class="modal-box">
+      <div class="modal-top">
+        <span class="modal-title">Почтовая Экспедицiя</span>
+        <button class="btn-close" id="closeModalBtn">&times;</button>
+      </div>
+
+      <div class="modal-content">
+        <div class="auth-wrap" id="authBox">
+          <div style="font-size: 13px; color: var(--parchment-dim);">Внесите служебный шифръ доступа:</div>
+          <input type="password" id="authPin" class="pin-field" maxlength="4" placeholder="••••" inputmode="numeric">
+          <button class="btn-submit" id="authBtn">Отопреть книгу</button>
+          <div class="err-text" id="authError">Невѣрный служебный шифръ</div>
+        </div>
+
+        <div id="panelBox" style="display: none; flex-direction: column; gap: 12px;">
+          <form id="addFlightForm" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--brass-bright); text-transform: uppercase;">Вписать отправленiе</div>
+            
+            <div class="field-group">
+              <label>Направленiе</label>
+              <select id="flightDirection" class="input-ctrl">
+                <option value="out">Исходящее (МЦГО РБ - Пунктъ)</option>
+                <option value="in">Входящее (Пунктъ - МЦГО РБ)</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label>Пунктъ назначенiя / отбытiя</label>
+              <input type="text" id="flightCity" class="input-ctrl" placeholder="Словакiя" required>
+            </div>
+
+            <div class="field-group">
+              <label>Порода голубя</label>
+              <input type="text" id="flightBreed" class="input-ctrl" placeholder="Почтовый Гривунъ" required>
+            </div>
+
+            <div class="time-inputs">
+              <div class="field-group">
+                <label>Часы</label>
+                <input type="number" id="timeHours" class="input-ctrl" min="0" max="99" value="0" required>
+              </div>
+              <div class="field-group">
+                <label>Минуты</label>
+                <input type="number" id="timeMinutes" class="input-ctrl" min="0" max="59" value="15" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Внести въ росписанiе</button>
+          </form>
+
+          <hr style="border: 0; height: 1px; background: var(--border-panel);">
+
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--parchment-dim); text-transform: uppercase;">Отозвать бортъ съ линiи</div>
+            <div class="delete-list" id="delList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ACCESS_CODE = "7272";
+    const DB_KEY = "MCGO_RB_VINTAGE_STATION_V6";
+
+    const defaultFlights = [
+      {
+        id: "FL-101",
+        direction: "in",
+        city: "СЛОВАКИЯ",
+        breed: "Почтовый Гривунъ",
+        created: Date.now() - 1000 * 180,
+        arrive: Date.now() + 1000 * 25
+      },
+      {
+        id: "FL-102",
+        direction: "out",
+        city: "СЛОВАКИЯ",
+        breed: "Башкирскiй Турманъ",
+        created: Date.now() - 1000 * 15,
+        arrive: Date.now() + 1000 * 60 * 14 + 1000 * 26
+      },
+      {
+        id: "FL-103",
+        direction: "out",
+        city: "УФА",
+        breed: "Бѣлый Сизый",
+        created: Date.now() - 1000 * 240,
+        arrive: Date.now() + 1000 * 60 * 39 + 1000 * 26
+      }
+    ];
+
+    function loadFlights() {
+      const data = localStorage.getItem(DB_KEY);
+      if (!data) {
+        localStorage.setItem(DB_KEY, JSON.stringify(defaultFlights));
+        return defaultFlights;
+      }
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return defaultFlights;
+      }
+    }
+
+    function saveFlights(data) {
+      localStorage.setItem(DB_KEY, JSON.stringify(data));
+    }
+
+    function formatCountdown(ms) {
+      if (ms <= 0) {
+        return `00<span class="t-unit">ч</span> 00<span class="t-unit">м</span> 00<span class="t-unit">с</span>`;
+      }
+      const totalSec = Math.floor(ms / 1000);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      const ss = String(s).padStart(2, '0');
+
+      return `${hh}<span class="t-unit">ч</span> ${mm}<span class="t-unit">м</span> ${ss}<span class="t-unit">с</span>`;
+    }
+
+    function getStatus(created, arrive) {
+      const now = Date.now();
+      const timeLeft = arrive - now;
+      const elapsed = now - created;
+
+      if (timeLeft <= 0) {
+        return { text: "ПРИЗЕМЛИЛСЯ", cls: "st-landed" };
+      }
+      if (elapsed <= 60000) {
+        return { text: "ВЗЛЁТЪ", cls: "st-takeoff" };
+      }
+      if (timeLeft <= 60000) {
+        return { text: "НА ПОСАДКУ", cls: "st-approach" };
+      }
+      return { text: "ВЪ ПУТИ", cls: "st-flight" };
+    }
+
+    function renderBoard() {
+      const flights = loadFlights();
+      const boardBody = document.getElementById("boardBody");
+      const delList = document.getElementById("delList");
+
+      boardBody.innerHTML = "";
+      delList.innerHTML = "";
+
+      if (flights.length === 0) {
+        boardBody.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--parchment-dim); font-size: 13px; font-style: italic;">Нѣтъ открытыхъ трактовъ въ росписанiи</div>`;
+        delList.innerHTML = `<div style="text-align: center; color: var(--parchment-dim); font-size: 11px; padding: 4px;">Списокъ пустъ</div>`;
+        return;
+      }
+
+      flights.forEach(f => {
+        const remaining = Math.max(0, f.arrive - Date.now());
+        const status = getStatus(f.created, f.arrive);
+        const route = f.direction === "out" ? `МЦГО РБ — ${f.city}` : `${f.city} — МЦГО РБ`;
+
+        const row = document.createElement("div");
+        row.className = "board-row";
+        row.innerHTML = `
+          <div class="row-top">
+            <div class="col-message">${route}</div>
+            <div class="col-time">${formatCountdown(remaining)}</div>
+          </div>
+          <div class="row-bottom">
+            <div class="col-breed">${f.breed}</div>
+            <div class="col-status ${status.cls}">${status.text}</div>
+          </div>
+        `;
+        boardBody.appendChild(row);
+
+        const delItem = document.createElement("div");
+        delItem.className = "delete-item";
+        delItem.innerHTML = `
+          <span>${route} [${f.breed}]</span>
+          <button type="button" class="btn-del" onclick="deleteEntry('${f.id}')">ОТОЗВАТЬ</button>
+        `;
+        delList.appendChild(delItem);
+      });
+    }
+
+    window.deleteEntry = function(id) {
+      let flights = loadFlights();
+      flights = flights.filter(item => item.id !== id);
+      saveFlights(flights);
+      renderBoard();
+    };
+
+    function updateWallClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById("wallClock").textContent = `${h}:${m}:${s}`;
+    }
+
+    // Управление Почтовой Экспедицией
+    const modalWindow = document.getElementById("modalWindow");
+    const openModalBtn = document.getElementById("openModalBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const authBox = document.getElementById("authBox");
+    const panelBox = document.getElementById("panelBox");
+    const authPin = document.getElementById("authPin");
+    const authBtn = document.getElementById("authBtn");
+    const authError = document.getElementById("authError");
+
+    function resetModal() {
+      authBox.style.display = "flex";
+      panelBox.style.display = "none";
+      authPin.value = "";
+      authError.style.display = "none";
+    }
+
+    openModalBtn.onclick = function() {
+      resetModal();
+      modalWindow.classList.add("active");
+      setTimeout(() => authPin.focus(), 100);
+    };
+
+    closeModalBtn.onclick = function() {
+      modalWindow.classList.remove("active");
+    };
+
+    modalWindow.onclick = function(e) {
+      if (e.target === modalWindow) {
+        modalWindow.classList.remove("active");
+      }
+    };
+
+    function authenticate() {
+      if (authPin.value.trim() === ACCESS_CODE) {
+        authBox.style.display = "none";
+        panelBox.style.display = "flex";
+        authError.style.display = "none";
+      } else {
+        authError.style.display = "block";
+        authPin.value = "";
+      }
+    }
+
+    authBtn.onclick = authenticate;
+    authPin.onkeydown = function(e) {
+      if (e.key === "Enter") authenticate();
+    };
+
+    // Внесение нового отправления
+    document.getElementById("addFlightForm").onsubmit = function(e) {
+      e.preventDefault();
+
+      const direction = document.getElementById("flightDirection").value;
+      const city = document.getElementById("flightCity").value.trim().toUpperCase();
+      const breed = document.getElementById("flightBreed").value.trim();
+      const h = parseInt(document.getElementById("timeHours").value, 10) || 0;
+      const m = parseInt(document.getElementById("timeMinutes").value, 10) || 0;
+
+      const totalDuration = (h * 3600 + m * 60) * 1000;
+      const now = Date.now();
+
+      const newEntry = {
+        id: "FL-" + Date.now(),
+        direction,
+        city,
+        breed,
+        created: now,
+        arrive: now + totalDuration
+      };
+
+      const flights = loadFlights();
+      flights.unshift(newEntry);
+      saveFlights(flights);
+
+      document.getElementById("flightCity").value = "";
+      document.getElementById("flightBreed").value = "";
+      renderBoard();
+      modalWindow.classList.remove("active");
+    };
+
+    renderBoard();
+    updateWallClock();
+    setInterval(() => {
+      updateWallClock();
+      renderBoard();
+    }, 1000);
+  </script>
+</body>
+</html>
