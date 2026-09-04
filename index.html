@@ -429,6 +429,12 @@
       border-color: var(--brass);
     }
 
+    .time-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
     .btn-submit {
       background: #2b1d12;
       color: var(--brass-bright);
@@ -490,6 +496,14 @@
       color: #e57373;
       font-size: 11px;
       font-style: italic;
+      display: none;
+    }
+
+    .success-badge {
+      color: var(--status-takeoff);
+      font-size: 12px;
+      font-style: italic;
+      text-align: center;
       display: none;
     }
   </style>
@@ -567,6 +581,7 @@
             </div>
 
             <button type="submit" class="btn-submit" id="submitFlightBtn">Внести въ росписанiе</button>
+            <div class="success-badge" id="successBadge">✓ Запись успѣшно внесена въ росписанiе</div>
           </form>
 
           <hr style="border: 0; height: 1px; background: var(--border-panel);">
@@ -581,7 +596,6 @@
   </div>
 
   <script>
-    // Часы запускаются первыми без зависимостей
     function updateWallClock() {
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
@@ -600,7 +614,6 @@
     let supabaseClient = null;
     let cachedFlights = [];
 
-    // Безопасная инициализация Supabase
     try {
       if (window.supabase && window.supabase.createClient) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -739,12 +752,14 @@
     const authPin = document.getElementById("authPin");
     const authBtn = document.getElementById("authBtn");
     const authError = document.getElementById("authError");
+    const successBadge = document.getElementById("successBadge");
 
     function resetModal() {
       authBox.style.display = "flex";
       panelBox.style.display = "none";
       authPin.value = "";
       authError.style.display = "none";
+      if (successBadge) successBadge.style.display = "none";
     }
 
     openModalBtn.onclick = function() {
@@ -778,6 +793,7 @@
         const hh = String(now.getHours()).padStart(2, '0');
         const min = String(now.getMinutes()).padStart(2, '0');
         document.getElementById("targetDateTime").value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+        document.getElementById("flightCity").focus();
       } else {
         authError.style.display = "block";
         authPin.value = "";
@@ -789,7 +805,7 @@
       if (e.key === "Enter") authenticate();
     };
 
-    // Отправка формы
+    // Добавление рейса без закрытия модалки
     document.getElementById("addFlightForm").onsubmit = async function(e) {
       e.preventDefault();
       if (!supabaseClient) {
@@ -798,9 +814,12 @@
       }
 
       const direction = document.getElementById("flightDirection").value;
-      const city = document.getElementById("flightCity").value.trim().toUpperCase();
-      const breed = document.getElementById("flightBreed").value.trim();
+      const cityInput = document.getElementById("flightCity");
+      const breedInput = document.getElementById("flightBreed");
       const targetDateVal = document.getElementById("targetDateTime").value;
+
+      const city = cityInput.value.trim().toUpperCase();
+      const breed = breedInput.value.trim();
 
       if (!targetDateVal) return;
 
@@ -832,13 +851,21 @@
         return;
       }
 
-      document.getElementById("flightCity").value = "";
-      document.getElementById("flightBreed").value = "";
-      modalWindow.classList.remove("active");
+      // Очистка полей и индикация без закрытия панели
+      cityInput.value = "";
+      breedInput.value = "";
+      cityInput.focus();
+
+      if (successBadge) {
+        successBadge.style.display = "block";
+        setTimeout(() => {
+          successBadge.style.display = "none";
+        }, 3000);
+      }
+
       fetchFlights();
     };
 
-    // Подписка Realtime
     if (supabaseClient) {
       supabaseClient
         .channel('public:flights')
