@@ -21,7 +21,7 @@
       --status-takeoff: #78a890;
       --status-flight: #c2b59b;
       --status-approach: #d68945;
-      --status-landed: #5e9c64;
+      --status-landed: #62a369;
       --ink-red: #a3382c;
 
       --font-title: 'Playfair Display', Georgia, serif;
@@ -50,7 +50,7 @@
 
     .container {
       width: 100%;
-      max-width: 900px;
+      max-width: 960px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -156,7 +156,7 @@
 
     .board-header-row {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 130px 140px;
+      grid-template-columns: 1.3fr 1fr 140px 100px 120px;
       background: #19120c;
       border-bottom: 2px solid var(--border-panel);
       padding: 6px 12px;
@@ -175,7 +175,7 @@
     /* Строка почтовой книги */
     .board-row {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 130px 140px;
+      grid-template-columns: 1.3fr 1fr 140px 100px 120px;
       align-items: center;
       padding: 10px 12px;
       background: #140d09;
@@ -199,6 +199,13 @@
       color: var(--parchment-dim);
       font-size: 13px;
       font-style: italic;
+    }
+
+    .col-arrival-date {
+      color: var(--parchment);
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
     .col-time {
@@ -237,7 +244,7 @@
     }
 
     /* Адаптация под смартфон */
-    @media (max-width: 600px) {
+    @media (max-width: 650px) {
       .station-header {
         flex-direction: column;
         align-items: stretch;
@@ -265,11 +272,11 @@
       .board-row {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 5px;
         padding: 8px 10px;
       }
 
-      .row-top, .row-bottom {
+      .row-top, .row-mid, .row-bottom {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
@@ -282,22 +289,27 @@
         padding-right: 4px;
       }
 
+      .col-time {
+        font-size: 14px;
+        text-align: right;
+        min-width: 80px;
+      }
+
       .col-breed {
         font-size: 12px;
         flex: 1;
         padding-right: 4px;
       }
 
-      .col-time {
-        font-size: 13px;
-        text-align: right;
-        min-width: 95px;
+      .col-arrival-date {
+        font-size: 12px;
+        color: var(--brass-bright);
       }
 
       .col-status {
         font-size: 11px;
         text-align: right;
-        min-width: 95px;
+        min-width: 80px;
       }
     }
 
@@ -416,12 +428,6 @@
       border-color: var(--brass);
     }
 
-    .time-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
     .btn-submit {
       background: #2b1d12;
       color: var(--brass-bright);
@@ -505,8 +511,9 @@
       <div class="board-header-row">
         <div>Сообщенiе</div>
         <div>Порода борта</div>
-        <div>Въ пути осталось</div>
-        <div>Состоянiе трассы</div>
+        <div>Срокъ прибытiя</div>
+        <div>Осталось</div>
+        <div>Состоянiе</div>
       </div>
       <div class="board-body" id="boardBody"></div>
     </div>
@@ -549,15 +556,9 @@
               <input type="text" id="flightBreed" class="input-ctrl" placeholder="Почтовый Гривунъ" required>
             </div>
 
-            <div class="time-inputs">
-              <div class="field-group">
-                <label>Часы</label>
-                <input type="number" id="timeHours" class="input-ctrl" min="0" max="99" value="0" required>
-              </div>
-              <div class="field-group">
-                <label>Минуты</label>
-                <input type="number" id="timeMinutes" class="input-ctrl" min="0" max="59" value="15" required>
-              </div>
+            <div class="field-group">
+              <label>Когда прибудетъ (Дата и время)</label>
+              <input type="datetime-local" id="targetDateTime" class="input-ctrl" required>
             </div>
 
             <button type="submit" class="btn-submit">Внести въ росписанiе</button>
@@ -576,7 +577,7 @@
 
   <script>
     const ACCESS_CODE = "7272";
-    const DB_KEY = "MCGO_RB_VINTAGE_STATION_V6";
+    const DB_KEY = "MCGO_RB_VINTAGE_STATION_V8";
 
     const defaultFlights = [
       {
@@ -584,16 +585,16 @@
         direction: "in",
         city: "СЛОВАКИЯ",
         breed: "Почтовый Гривунъ",
-        created: Date.now() - 1000 * 180,
-        arrive: Date.now() + 1000 * 25
+        created: Date.now() - 1000 * 300,
+        arrive: Date.now() - 1000 * 30 // Уже сел
       },
       {
         id: "FL-102",
         direction: "out",
         city: "СЛОВАКИЯ",
         breed: "Башкирскiй Турманъ",
-        created: Date.now() - 1000 * 15,
-        arrive: Date.now() + 1000 * 60 * 14 + 1000 * 26
+        created: Date.now() - 1000 * 15, // Взлет
+        arrive: Date.now() + (14 * 3600 + 2 * 60) * 1000 // 14ч 02м
       },
       {
         id: "FL-103",
@@ -601,7 +602,7 @@
         city: "УФА",
         breed: "Бѣлый Сизый",
         created: Date.now() - 1000 * 240,
-        arrive: Date.now() + 1000 * 60 * 39 + 1000 * 26
+        arrive: Date.now() + (138 * 3600 + 45 * 60) * 1000 // В пути
       }
     ];
 
@@ -622,20 +623,29 @@
       localStorage.setItem(DB_KEY, JSON.stringify(data));
     }
 
-    function formatCountdown(ms) {
+    function formatArrivalDate(timestamp) {
+      const months = [
+        "января", "февраля", "марта", "апреля", "мая", "июня",
+        "июля", "августа", "сентября", "октября", "ноября", "декабря"
+      ];
+      const d = new Date(timestamp);
+      const day = d.getDate();
+      const month = months[d.getMonth()];
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month}, ${hours}:${minutes}`;
+    }
+
+    function formatCountdownHM(ms) {
       if (ms <= 0) {
-        return `00<span class="t-unit">ч</span> 00<span class="t-unit">м</span> 00<span class="t-unit">с</span>`;
+        return `0<span class="t-unit">ч</span> 00<span class="t-unit">м</span>`;
       }
-      const totalSec = Math.floor(ms / 1000);
-      const h = Math.floor(totalSec / 3600);
-      const m = Math.floor((totalSec % 3600) / 60);
-      const s = totalSec % 60;
+      const totalMinutes = Math.floor(ms / 60000);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
 
-      const hh = String(h).padStart(2, '0');
-      const mm = String(m).padStart(2, '0');
-      const ss = String(s).padStart(2, '0');
-
-      return `${hh}<span class="t-unit">ч</span> ${mm}<span class="t-unit">м</span> ${ss}<span class="t-unit">с</span>`;
+      const mm = String(minutes).padStart(2, '0');
+      return `${hours}<span class="t-unit">ч</span> ${mm}<span class="t-unit">м</span>`;
     }
 
     function getStatus(created, arrive) {
@@ -644,7 +654,7 @@
       const elapsed = now - created;
 
       if (timeLeft <= 0) {
-        return { text: "ПРИЗЕМЛИЛСЯ", cls: "st-landed" };
+        return { text: "СѢЛЪ (ПОСАДКА)", cls: "st-landed" };
       }
       if (elapsed <= 60000) {
         return { text: "ВЗЛЁТЪ", cls: "st-takeoff" };
@@ -673,16 +683,21 @@
         const remaining = Math.max(0, f.arrive - Date.now());
         const status = getStatus(f.created, f.arrive);
         const route = f.direction === "out" ? `МЦГО РБ — ${f.city}` : `${f.city} — МЦГО РБ`;
+        const arrivalDateStr = formatArrivalDate(f.arrive);
 
         const row = document.createElement("div");
         row.className = "board-row";
         row.innerHTML = `
           <div class="row-top">
             <div class="col-message">${route}</div>
-            <div class="col-time">${formatCountdown(remaining)}</div>
+            <div class="col-time">${formatCountdownHM(remaining)}</div>
+          </div>
+          <div class="row-mid">
+            <div class="col-breed">${f.breed}</div>
+            <div class="col-arrival-date">${arrivalDateStr}</div>
           </div>
           <div class="row-bottom">
-            <div class="col-breed">${f.breed}</div>
+            <div></div>
             <div class="col-status ${status.cls}">${status.text}</div>
           </div>
         `;
@@ -691,7 +706,7 @@
         const delItem = document.createElement("div");
         delItem.className = "delete-item";
         delItem.innerHTML = `
-          <span>${route} [${f.breed}]</span>
+          <span>${route} [${arrivalDateStr}]</span>
           <button type="button" class="btn-del" onclick="deleteEntry('${f.id}')">ОТОЗВАТЬ</button>
         `;
         delList.appendChild(delItem);
@@ -713,7 +728,7 @@
       document.getElementById("wallClock").textContent = `${h}:${m}:${s}`;
     }
 
-    // Управление Почтовой Экспедицией
+    // Модальное окно
     const modalWindow = document.getElementById("modalWindow");
     const openModalBtn = document.getElementById("openModalBtn");
     const closeModalBtn = document.getElementById("closeModalBtn");
@@ -751,6 +766,16 @@
         authBox.style.display = "none";
         panelBox.style.display = "flex";
         authError.style.display = "none";
+
+        const now = new Date();
+        now.setHours(now.getHours() + 12);
+        now.setMinutes(0);
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById("targetDateTime").value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
       } else {
         authError.style.display = "block";
         authPin.value = "";
@@ -762,18 +787,24 @@
       if (e.key === "Enter") authenticate();
     };
 
-    // Внесение нового отправления
+    // Добавление рейса
     document.getElementById("addFlightForm").onsubmit = function(e) {
       e.preventDefault();
 
       const direction = document.getElementById("flightDirection").value;
       const city = document.getElementById("flightCity").value.trim().toUpperCase();
       const breed = document.getElementById("flightBreed").value.trim();
-      const h = parseInt(document.getElementById("timeHours").value, 10) || 0;
-      const m = parseInt(document.getElementById("timeMinutes").value, 10) || 0;
+      const targetDateVal = document.getElementById("targetDateTime").value;
 
-      const totalDuration = (h * 3600 + m * 60) * 1000;
+      if (!targetDateVal) return;
+
+      const arriveTimestamp = new Date(targetDateVal).getTime();
       const now = Date.now();
+
+      if (arriveTimestamp <= now) {
+        alert("Срокъ прибытiя долженъ быть въ будущемъ времени!");
+        return;
+      }
 
       const newEntry = {
         id: "FL-" + Date.now(),
@@ -781,7 +812,7 @@
         city,
         breed,
         created: now,
-        arrive: now + totalDuration
+        arrive: arriveTimestamp
       };
 
       const flights = loadFlights();
