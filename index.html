@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Колодцы с киселем | Литературная презентация</title>
+    
+    <!-- 
+        ВАЖНО ДЛЯ ОФЛАЙН РЕЖИМА:
+        Здесь нет ни одной внешней ссылки. Все стили и скрипты внутри.
+        Шрифты используются системные, но стилизованные под классическую литературу.
+    -->
+    
+    <style>
+        /* ============================================
+           1. БАЗОВЫЕ НАСТРОЙКИ И ПЕРЕМЕННЫЕ
+           ============================================ */
+        :root {
+            --bg-dark: #050507;
+            --bg-card: #0f0f13;
+            --text-main: #e0dcd3;
+            --text-muted: #8a8680;
+            --accent-gold: #c5a059;
+            --accent-gold-dim: #8a703e;
+            --accent-red: #5e1a1a;
+            --font-serif: 'Georgia', 'Times New Roman', serif;
+            --font-sans: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+            --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+        }
+
+        /* Скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-gold-dim);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-gold);
+        }
+
+        /* ============================================
+           2. КАНВАС ФОНА (ЧАСТИЦЫ)
+           ============================================ */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        /* ============================================
+           3. ТИПОГРАФИКА И ОБЩИЕ ЭЛЕМЕНТЫ
+           ============================================ */
+        h1, h2, h3, .serif-text {
+            font-family: var(--font-serif);
+            font-weight: normal;
+            letter-spacing: 0.02em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold-dim), transparent);
+            margin: 60px 0;
+            width: 100%;
+        }
+
+        /* ============================================
+           4. HERO SECTION (ГЛАВНЫЙ ЭКРАН)
+           ============================================ */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .hero-content {
+            transform-style: preserve-3d;
+            animation: floatHero 6s ease-in-out infinite;
+        }
+
+        @keyframes floatHero {
+            0%, 100% { transform: translateY(0) rotateX(0deg); }
+            50% { transform: translateY(-15px) rotateX(2deg); }
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            color: var(--text-main);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(197, 160, 89, 0.1);
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.6;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(to bottom, var(--accent-gold), transparent);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* ============================================
+           5. СЕКЦИИ КОНТЕНТА
+           ============================================ */
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-number {
+            font-size: 4rem;
+            color: var(--accent-gold-dim);
+            opacity: 0.3;
+            font-family: var(--font-serif);
+            line-height: 1;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: var(--accent-gold);
+        }
+
+        /* Grid Layout для карточек */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 2px;
+            transition: all 0.4s var(--ease-out-expo);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(197, 160, 89, 0.05), transparent 70%);
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-gold-dim);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--accent-gold);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Цитата блок */
+        .quote-block {
+            background: linear-gradient(135deg, var(--bg-card), #1a1a20);
+            padding: 60px;
+            text-align: center;
+            border-left: 4px solid var(--accent-gold);
+            margin: 60px 0;
+            position: relative;
+        }
+
+        .quote-text {
+            font-family: var(--font-serif);
+            font-size: 1.8rem;
+            font-style: italic;
+            color: var(--text-main);
+            line-height: 1.4;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .quote-author {
+            display: block;
+            margin-top: 20px;
+            font-size: 1rem;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Таймлайн / История */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: var(--accent-gold-dim);
+            opacity: 0.3;
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .timeline-dot {
+            width: 16px;
+            height: 16px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px var(--accent-gold);
+            z-index: 2;
+        }
+
+        .timeline-date {
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Интерактивный элемент "Кисель" */
+        .interactive-demo {
+            background: var(--bg-card);
+            padding: 50px;
+            border-radius: 4px;
+            text-align: center;
+            cursor: crosshair;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--accent-gold-dim);
+        }
+
+        .demo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(197, 160, 89, 0.15), transparent 50%);
+            pointer-events: none;
+            transition: background 0.1s;
+        }
+
+        .demo-hint {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 20px;
+            }
+            .timeline-item {
+                flex-direction: column !important;
+                align-items: flex-start;
+            }
+            .timeline-content {
+                width: calc(100% - 50px);
+                margin-left: 50px;
+            }
+            .timeline-dot {
+                left: 20px;
+            }
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .quote-text {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Канвас для фоновых частиц -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Главная секция -->
+    <header class="hero">
+        <div class="container hero-content fade-up visible">
+            <h1 class="hero-title">Колодцы<br>с киселем</h1>
+            <p class="hero-subtitle">Литературное исследование глубин смысла</p>
+        </div>
+        <div class="scroll-indicator">
+            <span style="font-size: 0.8rem; letter-spacing: 2px;">SCROLL</span>
+            <div class="scroll-line"></div>
+        </div>
+    </header>
+
+    <!-- Введение -->
+    <section id="intro">
+        <div class="container">
+            <div class="section-header fade-up">
+                <span class="section-number">I</span>
+                <h2 class="section-title">Суть метафоры</h2>
+            </div>
+            <div class="grid-2">
+                <div class="card fade-up">
+                    <div class="card-icon">🕳️</div>
+                    <h3>Колодец</h3>
+                    <p>Образ источника знаний, скрытых истин и подсознания. Глубина колодца символизирует сложность человеческого духа, куда невозможно заглянуть сразу.</p>
+                </div>
+                <div class="card fade-up" style="transition-delay: 0.1s;">
+                    <div class="card-icon">🥣</div>
+                    <h3>Кисель</h3>
+                    <p>Материальное воплощение непостижимого. Кисель густой, вязкий, меняющий форму. Это текучесть времени, памяти и забвения, которая заполняет пустоты бытия.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider container"></div>
+
+    <!-- Анализ текста -->
+    <section id="analysis">
+        <div class="container">
+            <div class="section-header fade-up">
+                <span class="section-number">II</span>
+                <h2 class="section-title">Структура повествования</h2>
+            </div>
+            
+            <div class="quote-block fade-up">
+                <p class="quote-text">«Мы черпали из колодца не воду, а сгустки прошлого, которые оседали на дне души тяжелым киселем.»</p>
+                <span class="quote-author">— Из архивных заметок автора</span>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item fade-up">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Глава 1: Пробуждение</span>
+                        <h3>Поиск дна</h3>
+                        <p>Герой спускается в колодец надеясь найти чистую воду истины, но обнаруживает лишь вязкую субстанцию воспоминаний.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item fade-up">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Глава 2: Консистенция</span>
+                        <h3>Борьба с вязкостью</h3>
+                        <p>Описание процесса попытки понять суть вещей. Чем ближе к истине, тем гуще становится среда вокруг наблюдателя.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item fade-up">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Глава 3: Принятие</span>
+                        <h3>Растворение</h3>
+                        <p>Финальная стадия, где герой перестает бороться с природой киселя и начинает видеть красоту в хаосе и неопределенности.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider container"></div>
+
+    <!-- Интерактивная секция -->
+    <section id="interactive">
+        <div class="container">
+            <div class="section-header fade-up">
+                <span class="section-number">III</span>
+                <h2 class="section-title">Эстетика текста</h2>
+            </div>
+            
+            <div class="interactive-demo fade-up" id="mouse-tracker">
+                <div class="demo-overlay"></div>
+                <h3 style="margin-bottom: 15px;">Наведи курсор</h3>
+                <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto;">
+                    Свет следует за тобой, словно взгляд сквозь толщу воды. Этот эффект имитирует преломление реальности в литературе.
+                </p>
+                <div class="demo-hint">*Движение мыши изменяет освещенность блока*</div>
+            </div>
+
+            <div class="grid-2" style="margin-top: 60px;">
+                <div class="card fade-up">
+                    <h3>Ритм прозы</h3>
+                    <p>Предложения то короткие, рубленые, как капли, падающие с веревки, то длинные и тягучие, напоминающие сам процесс варки киселя.</p>
+                </div>
+                <div class="card fade-up" style="transition-delay: 0.1s;">
+                    <h3>Цветовая палитра слов</h3>
+                    <p>Автор использует оттенки бежевого, охристого и темно-коричневого, создавая визуальный образ густой, питательной, но тяжелой материи языка.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Презентация по теме «Колодцы с киселем».</p>
+            <p style="margin-top: 10px; opacity: 0.5; font-size: 0.8rem;">Разработано специально для офлайн-просмотра. Без использования внешних ресурсов.</p>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * JAVASCRIPT ЛОГИКА
+         * Работает полностью локально.
+         */
+
+        // 1. Система частиц на фоне (Canvas)
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let particles = [];
+        const particleCount = 50; // Не слишком много, чтобы не грузить CPU
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                if (this.x > canvas.width) this.x = 0;
+                else if (this.x < 0) this.x = canvas.width;
+                
+                if (this.y > canvas.height) this.y = 0;
+                else if (this.y < 0) this.y = canvas.height;
+            }
+            
+            draw() {
+                ctx.fillStyle = `rgba(197, 160, 89, ${this.opacity})`; // Золотистый цвет
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+
+        // 2. Анимация появления элементов при скролле (Intersection Observer)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // Опционально: отключать наблюдение после первого показа
+                    // observer.unobserve(entry.target); 
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-up').forEach(el => {
+            observer.observe(el);
+        });
+
+
+        // 3. Эффект слежения за мышью для интерактивного блока
+        const demoBlock = document.getElementById('mouse-tracker');
+        const overlay = demoBlock.querySelector('.demo-overlay');
+
+        demoBlock.addEventListener('mousemove', (e) => {
+            const rect = demoBlock.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Обновляем CSS переменные для позиционирования градиента
+            demoBlock.style.setProperty('--x', `${(x / rect.width) * 100}%`);
+            demoBlock.style.setProperty('--y', `${(y / rect.height) * 100}%`);
+        });
+
+        demoBlock.addEventListener('mouseleave', () => {
+            demoBlock.style.setProperty('--x', '50%');
+            demoBlock.style.setProperty('--y', '50%');
+        });
+
+
+        // 4. Плавный скролл для якорей (если будут добавлены навигационные ссылки)
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        console.log("Презентация загружена. Режим: Offline. Красота: Max.");
+    </script>
+</body>
+</html>
