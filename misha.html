@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Миша Ласкин — Презентация</title>
+<style>
+:root{
+  --gold:#d4af37; --gold-light:#f5e6a8; --gold-deep:#8a6d1f;
+  --ink:#05070b; --ink-2:#0b0f16; --parchment:#e8dfc8;
+  --text:#c9d1dc; --muted:#7d8798;
+  --crimson:#8b1a1a; --crimson-light:#c0392b;
+  --green:#4ade80; --green-light:#a7f3d0;
+  --font-display: Georgia, 'Palatino Linotype', serif;
+  --font-body: Georgia, 'Palatino Linotype', serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--text);font-family:var(--font-body);font-size:18px;user-select:none;-webkit-tap-highlight-color:transparent;}
+::selection{background:var(--gold);color:var(--ink);}
+
+.deck{
+  position:relative;width:100vw;height:100vh;overflow:hidden;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 100%, #1a1308 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 0%, #1a1a2e 0%, transparent 60%),
+    linear-gradient(180deg, #0a0805 0%, #0b0f16 50%, #05070b 100%);
+}
+
+/* Пылинки */
+.dust{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+.dust-particle{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,230,168,.9),rgba(212,175,55,.15) 60%,transparent 75%);
+  animation:dustFloat linear infinite;opacity:0;
+}
+@keyframes dustFloat{
+  0%{transform:translate(0,0);opacity:0;}
+  15%{opacity:.7;}
+  85%{opacity:.5;}
+  100%{transform:translate(var(--drift,60px),var(--rise,-110vh));opacity:0;}
+}
+
+/* Слайды */
+.slide{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:7vh 7vw;
+  opacity:0;visibility:hidden;transform:scale(.94);
+  transition:opacity .8s cubic-bezier(.22,1,.36,1),visibility .8s,transform 1s cubic-bezier(.22,1,.36,1);
+  z-index:2;overflow:hidden;
+}
+.slide.active{opacity:1;visibility:visible;transform:scale(1);z-index:5;}
+.slide.prev{transform:scale(1.06) translateX(-3%);}
+.slide.next{transform:scale(1.06) translateX(3%);}
+
+.slide-number-bg{
+  position:absolute;right:4vw;bottom:2vh;
+  font-family:var(--font-display);font-weight:700;font-style:italic;
+  font-size:clamp(8rem,24vw,22rem);line-height:.8;
+  color:rgba(212,175,55,.05);pointer-events:none;z-index:0;
+}
+.slide-content{position:relative;z-index:3;width:100%;max-width:1300px;display:flex;flex-direction:column;gap:3vh;}
+
+/* Анимации */
+.slide .anim{opacity:0;transform:translateY(40px);}
+.slide.active .anim{animation:slideInUp 1s cubic-bezier(.22,1,.36,1) forwards;}
+.slide.active .anim.d1{animation-delay:.15s;}
+.slide.active .anim.d2{animation-delay:.30s;}
+.slide.active .anim.d3{animation-delay:.45s;}
+.slide.active .anim.d4{animation-delay:.60s;}
+.slide.active .anim.d5{animation-delay:.75s;}
+.slide.active .anim.d6{animation-delay:.90s;}
+@keyframes slideInUp{to{opacity:1;transform:translateY(0);}}
+.slide .anim-left{opacity:0;transform:translateX(-60px);}
+.slide.active .anim-left{animation:slideInLeft 1.1s cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes slideInLeft{to{opacity:1;transform:translateX(0);}}
+.slide .anim-right{opacity:0;transform:translateX(60px);}
+.slide.active .anim-right{animation:slideInRight 1.1s cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes slideInRight{to{opacity:1;transform:translateX(0);}}
+.slide .anim-zoom{opacity:0;transform:scale(.75);}
+.slide.active .anim-zoom{animation:slideInZoom 1.2s cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes slideInZoom{to{opacity:1;transform:scale(1);}}
+
+/* Типографика */
+.eyebrow{
+  font-family:var(--font-display);font-style:italic;font-size:clamp(.75rem,1.3vw,.95rem);
+  letter-spacing:.45em;text-transform:uppercase;color:var(--gold);
+  display:inline-flex;align-items:center;gap:18px;
+}
+.eyebrow::before{content:'';width:44px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+.eyebrow.center::after{content:'';width:44px;height:1px;background:linear-gradient(270deg,transparent,var(--gold));}
+
+.slide-title{
+  font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,5.4vw,4.4rem);
+  line-height:1.08;letter-spacing:.04em;text-transform:uppercase;
+  background:linear-gradient(180deg,#fffdf5 0%,#f5e6a8 30%,#d4af37 65%,#8a6d1f 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 22px rgba(212,175,55,.35));
+}
+.slide-title em{
+  font-style:italic;
+  background:linear-gradient(135deg,#f5e6a8,#d4af37,#8a6d1f);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-transform:none;letter-spacing:.02em;
+}
+.slide-desc{font-family:var(--font-body);font-style:italic;font-size:clamp(1rem,1.6vw,1.35rem);line-height:1.65;color:var(--muted);max-width:760px;}
+.body-text{font-family:var(--font-body);font-size:clamp(1rem,1.5vw,1.2rem);line-height:1.8;color:var(--text);}
+.body-text strong{color:var(--gold-light);font-weight:700;}
+.body-text em{color:var(--gold);font-style:italic;}
+
+/* UI */
+.deck-ui{position:fixed;inset:0;pointer-events:none;z-index:100;}
+.progress-track{position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,.05);pointer-events:auto;}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold-deep),var(--gold),var(--gold-light));box-shadow:0 0 12px var(--gold);transition:width .6s cubic-bezier(.22,1,.36,1);}
+.top-bar{position:absolute;top:0;left:0;right:0;padding:22px 3vw;display:flex;justify-content:space-between;align-items:center;pointer-events:auto;}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-size:.78rem;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
+.brand svg{width:28px;height:28px;}
+.top-actions{display:flex;align-items:center;gap:14px;}
+.top-btn{
+  width:42px;height:42px;display:grid;place-items:center;
+  background:rgba(11,15,22,.7);border:1px solid rgba(212,175,55,.28);color:var(--gold);
+  cursor:pointer;backdrop-filter:blur(8px);transition:all .3s;
+  clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.top-btn:hover{background:rgba(212,175,55,.18);border-color:var(--gold);transform:translateY(-2px);}
+.top-btn svg{width:18px;height:18px;}
+.bottom-bar{position:absolute;bottom:0;left:0;right:0;padding:24px 3vw;display:flex;justify-content:space-between;align-items:center;pointer-events:auto;}
+.dots{display:flex;gap:12px;background:rgba(11,15,22,.75);padding:12px 22px;border:1px solid rgba(212,175,55,.18);backdrop-filter:blur(10px);clip-path:polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(212,175,55,.25);border:none;cursor:pointer;padding:0;transition:all .4s cubic-bezier(.22,1,.36,1);position:relative;}
+.dot:hover{background:rgba(212,175,55,.55);transform:scale(1.3);}
+.dot.active{background:var(--gold);box-shadow:0 0 14px var(--gold);transform:scale(1.4);}
+.dot.active::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(212,175,55,.5);animation:dotPulse 2s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:.8;}50%{transform:scale(1.25);opacity:.2;}}
+.counter{font-family:var(--font-display);font-size:.82rem;font-weight:700;letter-spacing:.3em;color:var(--gold);background:rgba(11,15,22,.75);padding:12px 22px;border:1px solid rgba(212,175,55,.18);backdrop-filter:blur(10px);display:flex;align-items:baseline;gap:6px;clip-path:polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);}
+.counter .cur{font-size:1.15rem;color:var(--gold-light);}
+.counter .sep{color:var(--gold-deep);}
+.counter .tot{color:var(--muted);}
+.side-arrow{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:56px;display:grid;place-items:center;background:rgba(11,15,22,.7);border:1px solid rgba(212,175,55,.28);color:var(--gold);cursor:pointer;pointer-events:auto;backdrop-filter:blur(10px);transition:all .35s cubic-bezier(.22,1,.36,1);z-index:105;clip-path:polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);}
+.side-arrow:hover{background:rgba(212,175,55,.2);border-color:var(--gold);color:var(--gold-light);}
+.side-arrow:disabled{opacity:.15;cursor:not-allowed;}
+.side-arrow.left{left:2vw;}
+.side-arrow.right{right:2vw;}
+.side-arrow svg{width:22px;height:22px;}
+.start-hint{font-family:var(--font-display);font-size:.72rem;letter-spacing:.35em;text-transform:uppercase;color:var(--muted);margin-top:20px;display:flex;align-items:center;gap:14px;justify-content:center;}
+.start-hint .key{display:inline-flex;padding:4px 12px;border:1px solid rgba(212,175,55,.35);color:var(--gold);font-size:.66rem;}
+
+/* Слайд 1 — титул */
+.title-slide{text-align:center;align-items:center;}
+.title-slide .slide-content{align-items:center;text-align:center;}
+.title-slide .slide-title{font-size:clamp(2.4rem,7vw,5.5rem);line-height:1.05;margin:20px 0 24px;letter-spacing:.04em;}
+.hero-icon{width:clamp(120px,15vw,180px);height:clamp(120px,15vw,180px);margin:0 auto 26px;filter:drop-shadow(0 0 40px rgba(212,175,55,.55));animation:iconFloat 6s ease-in-out infinite;}
+@keyframes iconFloat{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-12px) rotate(2deg);}}
+.hero-icon svg{width:100%;height:100%;}
+
+/* Две колонки */
+.two-col{display:grid;grid-template-columns:1fr 1.15fr;gap:5vw;align-items:center;width:100%;}
+.two-col.reverse{direction:rtl;}
+.two-col.reverse > *{direction:ltr;}
+.visual-box{position:relative;display:flex;align-items:center;justify-content:center;}
+.visual-halo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(85%,420px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.2) 0%,transparent 68%);animation:haloPulse 6s ease-in-out infinite;pointer-events:none;}
+@keyframes haloPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.55;}50%{transform:translate(-50%,-50%) scale(1.14);opacity:1;}}
+.visual-svg{position:relative;z-index:2;width:100%;max-width:380px;height:auto;filter:drop-shadow(0 30px 60px rgba(0,0,0,.7));animation:svgBreathe 6s ease-in-out infinite;}
+@keyframes svgBreathe{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+
+.text-col{display:flex;flex-direction:column;gap:18px;}
+
+/* Теги */
+.tag{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border:1px solid rgba(212,175,55,.32);font-family:var(--font-display);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);background:rgba(212,175,55,.06);width:fit-content;}
+.tag .tag-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);}
+
+/* Мини-факты */
+.mini-facts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
+.mini-fact{padding:14px 18px;border-left:2px solid rgba(212,175,55,.35);background:linear-gradient(90deg,rgba(212,175,55,.06),transparent);transition:all .4s;}
+.mini-fact:hover{border-left-color:var(--gold);background:linear-gradient(90deg,rgba(212,175,55,.14),transparent);padding-left:24px;}
+.mini-fact .lbl{font-family:var(--font-display);font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+.mini-fact .val{font-family:var(--font-display);font-size:.98rem;font-weight:700;color:var(--parchment);letter-spacing:.02em;}
+
+/* Список уроков */
+.lessons{display:flex;flex-direction:column;gap:14px;margin-top:10px;}
+.lesson{display:flex;gap:16px;align-items:flex-start;padding:16px 20px;border-left:2px solid rgba(212,175,55,.35);background:linear-gradient(90deg,rgba(212,175,55,.06),transparent);transition:all .4s;}
+.lesson:hover{border-left-color:var(--gold);background:linear-gradient(90deg,rgba(212,175,55,.14),transparent);padding-left:26px;}
+.lesson .num{font-family:var(--font-display);font-style:italic;font-weight:700;font-size:1.1rem;color:var(--gold);min-width:24px;}
+.lesson .txt{font-size:1rem;color:var(--text);line-height:1.6;}
+
+/* Цитата */
+.quote-box{padding:32px 36px;border:1px solid rgba(212,175,55,.25);background:linear-gradient(170deg,rgba(28,37,52,.6),rgba(11,15,22,.9));clip-path:polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);position:relative;}
+.quote-mark{font-family:var(--font-display);font-size:4rem;line-height:.4;color:rgba(212,175,55,.3);display:block;margin-bottom:12px;}
+.quote-text{font-family:var(--font-body);font-style:italic;font-size:clamp(1.1rem,2vw,1.5rem);line-height:1.55;color:var(--parchment);}
+.quote-text em{font-style:italic;color:var(--gold);text-shadow:0 0 20px rgba(212,175,55,.4);}
+
+/* Финал */
+.final-slide{text-align:center;}
+.final-slide .slide-content{align-items:center;text-align:center;}
+.final-quote{font-family:var(--font-body);font-style:italic;font-size:clamp(1.2rem,3vw,2rem);line-height:1.55;color:var(--parchment);max-width:900px;margin:0 auto 30px;}
+.final-quote em{font-style:italic;background:linear-gradient(135deg,#f5e6a8,#d4af37,#8a6d1f);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.final-divider{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:30px auto;}
+.final-sign{font-family:var(--font-display);font-size:.74rem;letter-spacing:.38em;text-transform:uppercase;color:var(--muted);}
+
+.author-name{font-family:var(--font-display);font-weight:700;font-size:clamp(1.8rem,4.5vw,3.4rem);line-height:1.1;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(180deg,#fffdf5 0%,#f5e6a8 35%,#d4af37 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 22px rgba(212,175,55,.4));margin-bottom:16px;}
+.author-sub{font-family:var(--font-body);font-style:italic;font-size:clamp(1rem,1.8vw,1.3rem);color:var(--muted);max-width:640px;margin:0 auto 20px;line-height:1.6;}
+
+.restart-btn{display:inline-flex;align-items:center;gap:12px;padding:16px 38px;margin-top:24px;background:linear-gradient(135deg,var(--gold-light),var(--gold) 45%,var(--gold-deep));color:var(--ink);font-family:var(--font-display);font-size:.78rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;clip-path:polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);transition:all .35s cubic-bezier(.22,1,.36,1);box-shadow:0 8px 30px rgba(212,175,55,.3);pointer-events:auto;}
+.restart-btn:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(212,175,55,.5);}
+
+.back-link{position:absolute;top:18px;left:3vw;display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);text-decoration:none;pointer-events:auto;padding:10px 16px;background:rgba(11,15,22,.7);border:1px solid rgba(212,175,55,.28);clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);transition:all .3s;}
+.back-link:hover{background:rgba(212,175,55,.18);transform:translateX(-3px);}
+.back-link svg{width:14px;height:14px;}
+
+/* Адаптив */
+@media(max-width:900px){
+  .two-col{grid-template-columns:1fr;gap:30px;}
+  .two-col.reverse{direction:ltr;}
+  .visual-svg{max-width:260px;}
+  .slide{padding:9vh 6vw;}
+  .side-arrow{width:46px;height:46px;}
+  .side-arrow.left{left:1.5vw;}
+  .side-arrow.right{right:1.5vw;}
+}
+@media(max-width:640px){
+  body{font-size:16px;}
+  .top-bar{padding:16px 4vw;}
+  .bottom-bar{padding:16px 4vw;}
+  .brand span{display:none;}
+  .dots{padding:10px 16px;gap:9px;}
+  .dot{width:8px;height:8px;}
+  .counter{padding:10px 16px;font-size:.72rem;}
+  .side-arrow{width:42px;height:42px;}
+  .side-arrow svg{width:18px;height:18px;}
+  .mini-facts{grid-template-columns:1fr;}
+  .back-link span{display:none;}
+}
+@media(hover:none){
+  .side-arrow{opacity:.5;}
+  .start-hint .key{display:none;}
+}
+
+/* Анимации SVG */
+.sparkle{animation:sparkle 2s ease-in-out infinite;}
+.sparkle.s2{animation-delay:.5s;}
+.sparkle.s3{animation-delay:1s;}
+@keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8);}50%{opacity:1;transform:scale(1.2);}}
+.page-turn{animation:pageTurn 4s ease-in-out infinite;transform-origin:center;}
+@keyframes pageTurn{0%,100%{transform:rotate(0);}50%{transform:rotate(1.5deg);}}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="dust" id="dust"></div>
+
+  <!-- СЛАЙД 1 — ТИТУЛ -->
+  <section class="slide title-slide" data-slide="1">
+    <div class="slide-number-bg">I</div>
+    <div class="slide-content">
+      <div class="hero-icon anim anim-zoom">
+        <svg viewBox="0 0 160 160" fill="none">
+          <defs>
+            <linearGradient id="bookGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#e8dfc8"/>
+              <stop offset="100%" stop-color="#b3a888"/>
+            </linearGradient>
+            <linearGradient id="goldBook" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#f5e6a8"/>
+              <stop offset="100%" stop-color="#8a6d1f"/>
+            </linearGradient>
+          </defs>
+          <path d="M30 30 Q 80 20 130 30 L 130 130 Q 80 120 30 130 Z" fill="url(#bookGrad)" stroke="url(#goldBook)" stroke-width="2.4"/>
+          <path d="M80 30 V 130" stroke="url(#goldBook)" stroke-width="2"/>
+          <g stroke="#6b5a3e" stroke-width="1.4" opacity=".5">
+            <line x1="40" y1="48" x2="72" y2="46"/>
+            <line x1="40" y1="60" x2="70" y2="58"/>
+            <line x1="40" y1="72" x2="72" y2="70"/>
+            <line x1="88" y1="46" x2="120" y2="48"/>
+            <line x1="88" y1="58" x2="118" y2="60"/>
+            <line x1="88" y1="70" x2="120" y2="72"/>
+          </g>
+          <path d="M80 34 L 84 44 L 94 46 L 86 54 L 88 64 L 80 58 L 72 64 L 74 54 L 66 46 L 76 44 Z" fill="url(#goldBook)" opacity=".9"/>
+          <g fill="#f5e6a8">
+            <circle class="sparkle" cx="30" cy="20" r="2.4"/>
+            <circle class="sparkle s2" cx="130" cy="24" r="2"/>
+            <circle class="sparkle s3" cx="80" cy="10" r="2.6"/>
+          </g>
+        </svg>
+      </div>
+      <div class="eyebrow center anim d2">Борис Екимов · Рассказ</div>
+      <h1 class="slide-title anim d3">Миша<br>Ласкин</h1>
+      <p class="slide-desc anim d4" style="text-align:center;margin:0 auto;">
+        История о мальчике, который не прошёл мимо несправедливости.
+      </p>
+      <div class="start-hint anim d6">
+        <span class="key">→</span>
+        <span>Листайте стрелками или кликом</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЛАЙД 2 — АВТОР -->
+  <section class="slide" data-slide="2">
+    <div class="slide-number-bg">II</div>
+    <div class="slide-content">
+      <div class="two-col">
+        <div class="visual-box anim-left d2">
+          <div class="visual-halo"></div>
+          <svg class="visual-svg" viewBox="0 0 400 400" fill="none">
+            <defs>
+              <linearGradient id="quillGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f5e6a8"/>
+                <stop offset="100%" stop-color="#8a6d1f"/>
+              </linearGradient>
+            </defs>
+            <circle cx="200" cy="200" r="140" fill="none" stroke="rgba(212,175,55,.15)" stroke-width="1" stroke-dasharray="4 8"/>
+            <circle cx="200" cy="200" r="110" fill="none" stroke="rgba(212,175,55,.2)" stroke-width="1"/>
+            <!-- Силуэт писателя -->
+            <g fill="#1a1308" opacity=".9">
+              <circle cx="200" cy="160" r="38"/>
+              <path d="M150 200 Q 200 185 250 200 L 260 320 L 140 320 Z"/>
+            </g>
+            <!-- Перо -->
+            <g transform="translate(270, 110) rotate(35)">
+              <path d="M0 0 C 12 -30, 36 -48, 60 -54 C 52 -36, 42 -18, 30 9 L 18 45 L 12 42 L 24 9 Z" fill="url(#quillGrad)"/>
+              <path d="M0 0 L -12 36 L -8 39 L 12 6" stroke="#8a6d1f" stroke-width="1.4" fill="none"/>
+            </g>
+            <!-- Чернильница -->
+            <path d="M100 330 L 130 330 L 136 370 L 94 370 Z" fill="#1a1308" stroke="url(#quillGrad)" stroke-width="1.4"/>
+            <ellipse cx="115" cy="330" rx="15" ry="4" fill="#3a2a1a"/>
+            <g fill="#f5e6a8">
+              <circle class="sparkle" cx="60" cy="60" r="2.4"/>
+              <circle class="sparkle s2" cx="340" cy="340" r="2"/>
+            </g>
+          </svg>
+        </div>
+        <div class="text-col anim-right d3">
+          <span class="tag"><span class="tag-dot"></span>Автор</span>
+          <h2 class="slide-title" style="font-size:clamp(1.8rem,4vw,3rem);">Борис <em>Екимов</em></h2>
+          <p class="body-text">
+            Русский писатель, родился в 1938 году. Пишет о деревне, детстве,
+            простых людях и <strong>нравственных выборах</strong>. Его рассказы —
+            о том, как в обычной жизни раскрывается характер человека.
+          </p>
+          <p class="body-text">
+            Рассказ <em>«Миша Ласкин»</em> — одна из его известных историй о детстве.
+          </p>
+          <div class="mini-facts">
+            <div class="mini-fact">
+              <span class="lbl">Год рождения</span>
+              <span class="val">1938</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Жанр</span>
+              <span class="val">Рассказ</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Тема</span>
+              <span class="val">Детство и выбор</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Главное</span>
+              <span class="val">Совесть и смелость</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЛАЙД 3 — ГЕРОЙ -->
+  <section class="slide" data-slide="3">
+    <div class="slide-number-bg">III</div>
+    <div class="slide-content">
+      <div class="two-col reverse">
+        <div class="visual-box anim-right d2">
+          <div class="visual-halo"></div>
+          <svg class="visual-svg" viewBox="0 0 400 400" fill="none">
+            <defs>
+              <linearGradient id="boyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2a2418"/>
+                <stop offset="100%" stop-color="#0a0805"/>
+              </linearGradient>
+              <linearGradient id="shieldGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f5e6a8"/>
+                <stop offset="100%" stop-color="#8a6d1f"/>
+              </linearGradient>
+            </defs>
+            <!-- Мальчик -->
+            <g fill="url(#boyGrad)">
+              <circle cx="180" cy="140" r="42"/>
+              <path d="M120 190 Q 180 170 240 190 L 250 340 L 110 340 Z"/>
+            </g>
+            <!-- Щит -->
+            <path d="M270 180 L 320 200 V 260 C 320 300 300 320 290 330 C 280 320 260 300 260 260 V 200 Z" fill="none" stroke="url(#shieldGrad)" stroke-width="3"/>
+            <path d="M290 210 V 300" stroke="url(#shieldGrad)" stroke-width="2"/>
+            <path d="M275 235 H 305" stroke="url(#shieldGrad)" stroke-width="2"/>
+            <!-- Лучи силы от щита -->
+            <g stroke="#f5e6a8" stroke-width="1" opacity=".4">
+              <line x1="330" y1="220" x2="350" y2="215"/>
+              <line x1="330" y1="250" x2="355" y2="250"/>
+              <line x1="330" y1="280" x2="350" y2="285"/>
+            </g>
+            <g fill="#f5e6a8">
+              <circle class="sparkle" cx="60" cy="80" r="2.4"/>
+              <circle class="sparkle s2" cx="340" cy="120" r="2"/>
+              <circle class="sparkle s3" cx="80" cy="320" r="2.6"/>
+            </g>
+          </svg>
+        </div>
+        <div class="text-col anim-left d3">
+          <span class="tag"><span class="tag-dot"></span>Герой</span>
+          <h2 class="slide-title" style="font-size:clamp(1.8rem,4vw,3rem);">Миша <em>Ласкин</em></h2>
+          <p class="body-text">
+            Мальчик, который <strong>не боится встать на защиту слабого</strong>.
+            Честный, смелый, с обострённым чувством справедливости.
+          </p>
+          <p class="body-text">
+            Его поступок — пример <em>нравственного выбора</em>:
+            промолчать и остаться в стороне или вмешаться, рискуя собой.
+          </p>
+          <div class="mini-facts">
+            <div class="mini-fact">
+              <span class="lbl">Кто</span>
+              <span class="val">Школьник</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Черты</span>
+              <span class="val">Смелость, честность</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Что делает</span>
+              <span class="val">Защищает</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Главное</span>
+              <span class="val">Поступает по совести</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЛАЙД 4 — СЮЖЕТ -->
+  <section class="slide" data-slide="4">
+    <div class="slide-number-bg">IV</div>
+    <div class="slide-content">
+      <div class="two-col">
+        <div class="visual-box anim-left d2">
+          <div class="visual-halo"></div>
+          <svg class="visual-svg" viewBox="0 0 400 400" fill="none">
+            <defs>
+              <linearGradient id="pathGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#8a6d1f" stop-opacity=".3"/>
+                <stop offset="50%" stop-color="#f5e6a8"/>
+                <stop offset="100%" stop-color="#8a6d1f" stop-opacity=".3"/>
+              </linearGradient>
+            </defs>
+            <!-- Дорога/путь -->
+            <path d="M60 340 Q 120 280 180 240 Q 240 200 320 140" stroke="url(#pathGrad)" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M70 350 Q 130 290 190 250 Q 250 210 330 150" stroke="url(#pathGrad)" stroke-width="1.5" fill="none" opacity=".5"/>
+            <!-- Точки-выборы -->
+            <circle cx="120" cy="280" r="10" fill="#8a6d1f" opacity=".6"/>
+            <circle cx="200" cy="230" r="14" fill="#f5e6a8"/>
+            <circle cx="200" cy="230" r="22" fill="none" stroke="#f5e6a8" stroke-width="1" opacity=".5"/>
+            <circle cx="280" cy="180" r="10" fill="#8a6d1f" opacity=".6"/>
+            <!-- Звезда на главном выборе -->
+            <path d="M200 218 L 203 226 L 211 227 L 205 233 L 207 241 L 200 237 L 193 241 L 195 233 L 189 227 L 197 226 Z" fill="#8a6d1f"/>
+            <g fill="#f5e6a8">
+              <circle class="sparkle" cx="60" cy="60" r="2.4"/>
+              <circle class="sparkle s2" cx="340" cy="80" r="2"/>
+            </g>
+          </svg>
+        </div>
+        <div class="text-col anim-right d3">
+          <span class="tag"><span class="tag-dot"></span>Сюжет</span>
+          <h2 class="slide-title" style="font-size:clamp(1.8rem,4vw,3rem);">О чём <em>рассказ</em></h2>
+          <p class="body-text">
+            Рассказ строится вокруг <strong>одного эпизода</strong> из жизни мальчика.
+            Внешне — обычная детская ситуация.
+          </p>
+          <p class="body-text">
+            Но внутри неё — <em>серьёзный выбор</em>: промолчать и остаться
+            в стороне или вмешаться, рискуя собой. Миша выбирает второе.
+          </p>
+          <div class="mini-facts">
+            <div class="mini-fact">
+              <span class="lbl">Место</span>
+              <span class="val">Двор / деревня</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Время</span>
+              <span class="val">Детство</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Главное</span>
+              <span class="val">Нравственный выбор</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Финал</span>
+              <span class="val">Поступок по совести</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЛАЙД 5 — ТЕМА И ИДЕЯ -->
+  <section class="slide" data-slide="5">
+    <div class="slide-number-bg">V</div>
+    <div class="slide-content">
+      <div class="two-col reverse">
+        <div class="visual-box anim-right d2">
+          <div class="visual-halo"></div>
+          <svg class="visual-svg" viewBox="0 0 400 400" fill="none">
+            <defs>
+              <linearGradient id="heartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f5e6a8"/>
+                <stop offset="50%" stop-color="#d4af37"/>
+                <stop offset="100%" stop-color="#8a6d1f"/>
+              </linearGradient>
+            </defs>
+            <!-- Лучи -->
+            <g stroke="#d4af37" stroke-width="2" opacity=".5" stroke-linecap="round">
+              <line x1="200" y1="40" x2="200" y2="80"/>
+              <line x1="200" y1="320" x2="200" y2="360"/>
+              <line x1="40" y1="200" x2="80" y2="200"/>
+              <line x1="320" y1="200" x2="360" y2="200"/>
+              <line x1="80" y1="80" x2="110" y2="110"/>
+              <line x1="320" y1="80" x2="290" y2="110"/>
+              <line x1="80" y1="320" x2="110" y2="290"/>
+              <line x1="320" y1="320" x2="290" y2="290"/>
+            </g>
+            <!-- Сердце -->
+            <path d="M200 280 C 140 220, 100 180, 100 140 C 100 100, 140 80, 170 100 C 185 110, 195 125, 200 140 C 205 125, 215 110, 230 100 C 260 80, 300 100, 300 140 C 300 180, 260 220, 200 280 Z" fill="url(#heartGrad)" opacity=".9"/>
+            <path d="M200 280 C 140 220, 100 180, 100 140 C 100 100, 140 80, 170 100 C 185 110, 195 125, 200 140 C 205 125, 215 110, 230 100 C 260 80, 300 100, 300 140 C 300 180, 260 220, 200 280 Z" fill="none" stroke="#fffdf5" stroke-width="1" opacity=".4"/>
+            <g fill="#f5e6a8">
+              <circle class="sparkle" cx="60" cy="60" r="2.4"/>
+              <circle class="sparkle s2" cx="340" cy="80" r="2"/>
+            </g>
+          </svg>
+        </div>
+        <div class="text-col anim-left d3">
+          <span class="tag"><span class="tag-dot"></span>Тема и идея</span>
+          <h2 class="slide-title" style="font-size:clamp(1.8rem,4vw,3rem);">О чём говорит <em>автор</em></h2>
+          <p class="body-text">
+            Автор говорит о том, что <strong>настоящая смелость</strong> — не в драках,
+            а в способности поступить по совести.
+          </p>
+          <p class="body-text">
+            О <em>дружбе</em>, которая проверяется поступками.
+            О том, что даже ребёнок может быть сильнее взрослых.
+          </p>
+          <div class="mini-facts">
+            <div class="mini-fact">
+              <span class="lbl">Тема</span>
+              <span class="val">Нравственный выбор</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Идея</span>
+              <span class="val">Смелость и совесть</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Проблема</span>
+              <span class="val">Равнодушие</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Ценность</span>
+              <span class="val">Дружба и защита</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЛАЙД 6 — УРОКИ -->
+  <section class="slide" data-slide="6">
+    <div class="slide-number-bg">VI</div>
+    <div class="slide-content">
+      <div class="eyebrow anim d1">Уроки</div>
+      <h2 class="slide-title anim d2">Чему учит <em>рассказ</em></h2>
+      <p class="slide-desc anim d3">
+        Четыре простые мысли, которые остаются после прочтения.
+      </p>
+      <div class="lessons">
+        <div class="lesson anim d3">
+          <div class="num">I</div>
+          <div class="txt"><strong>Не проходить мимо.</strong> Равнодушие — тоже выбор, и часто худший.</div>
+        </div>
+        <div class="lesson anim d4">
+          <div class="num">II</div>
+          <div class="txt"><strong>Защищать слабого.</strong> Настоящая сила — не в кулаках, а в поступках.</div>
+        </div>
+        <div class="lesson anim d5">
+          <div class="num">III</div>
+          <div class="txt"><strong>Быть честным с собой.</strong> Сначала ты решаешь, потом решение меняет тебя.</div>
+        </div>
+        <div class="lesson anim d6">
+          <div class="num">IV</div>
+          <div class="txt"><strong>Отвечать за свои поступки.</strong> Даже маленький шаг имеет значение.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЛАЙД 7 — ЦИТАТА -->
+  <section class="slide" data-slide="7">
+    <div class="slide-number-bg">VII</div>
+    <div class="slide-content">
+      <div class="eyebrow anim d1">Ключевая мысль</div>
+      <h2 class="slide-title anim d2">Главное</h2>
+      <div class="quote-box anim d3">
+        <div class="quote-mark">"</div>
+        <div class="quote-text">
+          Настоящая смелость — это когда ты <em>боишься</em>, но всё равно <em>делаешь</em>.
+        </div>
+      </div>
+      <p class="body-text anim d4" style="margin-top:20px;">
+        Рассказ Екимова напоминает: даже <strong>один поступок</strong> может изменить
+        чью-то жизнь. И неважно, сколько тебе лет — важно, что ты выбрал.
+      </p>
+    </div>
+  </section>
+
+  <!-- СЛАЙД 8 — АВТОР ПРЕЗЕНТАЦИИ -->
+  <section class="slide final-slide" data-slide="8">
+    <div class="slide-number-bg">VIII</div>
+    <div class="slide-content">
+      <div class="eyebrow center anim d1">Эпилог · Автор</div>
+      <div class="final-divider anim d2"></div>
+      <h2 class="author-name anim d3">Ионцев Михаил</h2>
+      <p class="author-sub anim d4">
+        Презентация создана по рассказу Бориса Екимова «Миша Ласкин».
+      </p>
+      <div class="final-divider anim d5"></div>
+      <div class="final-sign anim d5">Литература · 2026</div>
+      <div class="final-divider anim d5"></div>
+      <button class="restart-btn anim d6" id="restartBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12 A9 9 0 1 0 12 3"/>
+          <path d="M3 3 V8 H8"/>
+        </svg>
+        Смотреть заново
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- UI -->
+<div class="deck-ui">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <a href="index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 6 L9 12 L15 18"/>
+    </svg>
+    <span>К выбору</span>
+  </a>
+
+  <div class="top-actions" style="position:absolute;top:18px;right:3vw;pointer-events:auto;">
+    <button class="top-btn" id="fullscreenBtn" title="Полный экран">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 9 V4 H9"/>
+        <path d="M15 4 H20 V9"/>
+        <path d="M20 15 V20 H15"/>
+        <path d="M9 20 H4 V15"/>
+      </svg>
+    </button>
+  </div>
+
+  <button class="side-arrow left" id="prevBtn" title="Назад">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 6 L9 12 L15 18"/>
+    </svg>
+  </button>
+  <button class="side-arrow right" id="nextBtn" title="Вперёд">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 6 L15 12 L9 18"/>
+    </svg>
+  </button>
+
+  <div class="bottom-bar">
+    <div class="dots" id="dots"></div>
+    <div class="counter">
+      <span class="cur" id="counterCur">1</span>
+      <span class="sep">/</span>
+      <span class="tot" id="counterTot">8</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function initDust(){
+  const layer = document.getElementById('dust');
+  let html = '';
+  for (let i = 0; i < 50; i++){
+    const size = (1.5 + Math.random() * 3).toFixed(1);
+    html += `<span class="dust-particle" style="
+      left:${(Math.random()*100).toFixed(2)}%;
+      bottom:-20px;
+      width:${size}px;height:${size}px;
+      animation-duration:${(14 + Math.random()*16).toFixed(1)}s;
+      animation-delay:${(Math.random()*20).toFixed(1)}s;
+      --drift:${(Math.random()*200 - 100).toFixed(0)}px;
+      --rise:${(-100 - Math.random()*30).toFixed(0)}vh;
+    "></span>`;
+  }
+  layer.innerHTML = html;
+})();
+
+(function initDeck(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  let animating = false;
+
+  const dotsWrap   = document.getElementById('dots');
+  const counterCur = document.getElementById('counterCur');
+  const counterTot = document.getElementById('counterTot');
+  const progress   = document.getElementById('progressFill');
+  const prevBtn    = document.getElementById('prevBtn');
+  const nextBtn    = document.getElementById('nextBtn');
+
+  counterTot.textContent = total;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.setAttribute('aria-label', 'Слайд ' + (i + 1));
+    d.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  function goTo(index, direction){
+    if (animating) return;
+    if (index < 0 || index >= total) return;
+    if (index === current) return;
+
+    animating = true;
+    const old = slides[current];
+    const nw  = slides[index];
+    const dir = direction !== undefined ? direction : (index > current ? 'next' : 'prev');
+
+    old.classList.remove('active');
+    old.classList.add(dir === 'next' ? 'prev' : 'next');
+
+    nw.classList.remove('prev', 'next');
+    void nw.offsetWidth;
+    nw.classList.add('active');
+
+    current = index;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    counterCur.textContent = current + 1;
+    progress.style.width = ((current + 1) / total * 100) + '%';
+
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+
+    setTimeout(() => {
+      old.classList.remove('prev', 'next');
+      animating = false;
+    }, 850);
+  }
+
+  function next(){ if (current < total - 1) goTo(current + 1, 'next'); }
+  function prev(){ if (current > 0) goTo(current - 1, 'prev'); }
+
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+
+  document.addEventListener('keydown', (e) => {
+    switch (e.key){
+      case 'ArrowRight':
+      case 'ArrowDown':
+      case ' ':
+      case 'PageDown':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+      case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home':
+        e.preventDefault(); goTo(0, 'prev'); break;
+      case 'End':
+        e.preventDefault(); goTo(total - 1, 'next'); break;
+    }
+  });
+
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)){
+      if (dx < 0) next();
+      else prev();
+    }
+  }, { passive: true });
+
+  let wheelLock = false;
+  document.addEventListener('wheel', (e) => {
+    if (wheelLock) return;
+    if (Math.abs(e.deltaY) < 30) return;
+    wheelLock = true;
+    if (e.deltaY > 0) next();
+    else prev();
+    setTimeout(() => wheelLock = false, 900);
+  }, { passive: true });
+
+  document.getElementById('fullscreenBtn').addEventListener('click', () => {
+    if (!document.fullscreenElement){
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    goTo(0, 'prev');
+  });
+
+  slides[0].classList.add('active');
+  progress.style.width = (1 / total * 100) + '%';
+  prevBtn.disabled = true;
+  nextBtn.disabled = total <= 1;
+})();
+</script>
+
+</body>
+</html>

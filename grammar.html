@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Present Simple & Present Continuous</title>
+<style>
+/* ============================================================
+   ПЕРЕМЕННЫЕ — ГРАММАТИКА, КНИГА ЗНАНИЙ
+   ============================================================ */
+:root{
+  --gold:        #d4af37;
+  --gold-light:  #f5e6a8;
+  --gold-deep:   #8a6d1f;
+  --ink:         #05070b;
+  --ink-2:       #0b0f16;
+  --ink-3:       #131a25;
+  --parchment:   #e8dfc8;
+  --text:        #c9d1dc;
+  --muted:       #7d8798;
+
+  --blue:        #4a9eff;
+  --blue-light:  #a8d4ff;
+  --blue-deep:   #1a4a7a;
+  --red:         #e05a5a;
+  --red-light:   #f5a8a8;
+  --red-deep:    #7a1a1a;
+
+  --font-display: Georgia, 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif;
+  --font-body:    Georgia, 'Palatino Linotype', 'Book Antiqua', serif;
+  --font-mono:    'Courier New', 'Consolas', monospace;
+}
+
+*,*::before,*::after{ margin:0; padding:0; box-sizing:border-box; }
+
+html,body{
+  width:100%; height:100%;
+  overflow:hidden;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 18px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection{ background: var(--gold); color: var(--ink); }
+
+/* ============================================================
+   СЦЕНА
+   ============================================================ */
+.deck{
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 100%, #1a1308 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 0%, #0a1a2a 0%, transparent 60%),
+    linear-gradient(180deg, #05070b 0%, #0b0f16 50%, #05070b 100%);
+}
+
+/* Плавающие буквы на фоне */
+.letters-bg{ position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.letter-particle{
+  position: absolute;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: rgba(212,175,55,.08);
+  animation: letterFloat linear infinite;
+  opacity: 0;
+}
+@keyframes letterFloat{
+  0%   { transform: translate(0,0) rotate(0deg); opacity: 0; }
+  15%  { opacity: .6; }
+  85%  { opacity: .3; }
+  100% { transform: translate(var(--drift, 60px), var(--rise, -110vh)) rotate(var(--rot, 180deg)); opacity: 0; }
+}
+
+/* ============================================================
+   СЛАЙДЫ
+   ============================================================ */
+.slide{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 7vh 7vw;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(.94);
+  transition:
+    opacity .8s cubic-bezier(.22,1,.36,1),
+    visibility .8s,
+    transform 1s cubic-bezier(.22,1,.36,1);
+  z-index: 2;
+  overflow: hidden;
+}
+.slide.active{
+  opacity: 1; visibility: visible;
+  transform: scale(1);
+  z-index: 5;
+}
+.slide.prev{ transform: scale(1.06) translateX(-3%); }
+.slide.next{ transform: scale(1.06) translateX(3%); }
+
+.slide-number-bg{
+  position: absolute;
+  right: 4vw; bottom: 2vh;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(8rem, 24vw, 22rem);
+  line-height: .8;
+  color: rgba(212,175,55,.05);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.slide-content{
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 1300px;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5vh;
+}
+
+/* Анимации появления */
+.slide .anim{ opacity: 0; transform: translateY(40px); }
+.slide.active .anim{ animation: slideInUp 1s cubic-bezier(.22,1,.36,1) forwards; }
+.slide.active .anim.d1{ animation-delay: .15s; }
+.slide.active .anim.d2{ animation-delay: .30s; }
+.slide.active .anim.d3{ animation-delay: .45s; }
+.slide.active .anim.d4{ animation-delay: .60s; }
+.slide.active .anim.d5{ animation-delay: .75s; }
+.slide.active .anim.d6{ animation-delay: .90s; }
+.slide.active .anim.d7{ animation-delay: 1.05s; }
+.slide.active .anim.d8{ animation-delay: 1.20s; }
+@keyframes slideInUp{ to{ opacity: 1; transform: translateY(0); } }
+
+.slide .anim-left{ opacity: 0; transform: translateX(-60px); }
+.slide.active .anim-left{ animation: slideInLeft 1.1s cubic-bezier(.22,1,.36,1) forwards; }
+@keyframes slideInLeft{ to{ opacity: 1; transform: translateX(0); } }
+
+.slide .anim-right{ opacity: 0; transform: translateX(60px); }
+.slide.active .anim-right{ animation: slideInRight 1.1s cubic-bezier(.22,1,.36,1) forwards; }
+@keyframes slideInRight{ to{ opacity: 1; transform: translateX(0); } }
+
+.slide .anim-zoom{ opacity: 0; transform: scale(.75); }
+.slide.active .anim-zoom{ animation: slideInZoom 1.2s cubic-bezier(.22,1,.36,1) forwards; }
+@keyframes slideInZoom{ to{ opacity: 1; transform: scale(1); } }
+
+/* ============================================================
+   ТИПОГРАФИКА
+   ============================================================ */
+.eyebrow{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(.75rem, 1.3vw, .95rem);
+  letter-spacing: .45em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+}
+.eyebrow::before{
+  content: '';
+  width: 44px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+.eyebrow.center::after{
+  content: '';
+  width: 44px; height: 1px;
+  background: linear-gradient(270deg, transparent, var(--gold));
+}
+
+.slide-title{
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 4.6vw, 3.8rem);
+  line-height: 1.1;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fffdf5 0%, #f5e6a8 30%, #d4af37 65%, #8a6d1f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 22px rgba(212,175,55,.35));
+}
+.slide-title em{
+  font-style: italic;
+  background: linear-gradient(135deg, #f5e6a8, #d4af37, #8a6d1f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-transform: none;
+  letter-spacing: .02em;
+}
+
+.slide-desc{
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: clamp(.95rem, 1.5vw, 1.2rem);
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 760px;
+}
+
+.body-text{
+  font-family: var(--font-body);
+  font-size: clamp(.95rem, 1.4vw, 1.12rem);
+  line-height: 1.7;
+  color: var(--text);
+}
+.body-text strong{ color: var(--gold-light); font-weight: 700; }
+.body-text em{ color: var(--gold); font-style: italic; }
+
+/* Английский текст */
+.en{
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--gold-light);
+}
+.en-blue{ font-family: var(--font-display); font-style: italic; color: var(--blue-light); }
+.en-red{ font-family: var(--font-display); font-style: italic; color: var(--red-light); }
+
+/* ============================================================
+   ИНТЕРФЕЙС
+   ============================================================ */
+.deck-ui{ position: fixed; inset: 0; pointer-events: none; z-index: 100; }
+
+.progress-track{
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,.05);
+  pointer-events: auto;
+}
+.progress-fill{
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-light));
+  box-shadow: 0 0 12px var(--gold);
+  transition: width .6s cubic-bezier(.22,1,.36,1);
+}
+
+.top-bar{
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 22px 3vw;
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: auto;
+}
+.brand{
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-display);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.brand svg{ width: 28px; height: 28px; }
+
+.top-actions{ display: flex; align-items: center; gap: 14px; }
+.top-btn{
+  width: 42px; height: 42px;
+  display: grid; place-items: center;
+  background: rgba(11,15,22,.7);
+  border: 1px solid rgba(212,175,55,.28);
+  color: var(--gold);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all .3s;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.top-btn:hover{
+  background: rgba(212,175,55,.18);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+.top-btn svg{ width: 18px; height: 18px; }
+
+.bottom-bar{
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 24px 3vw;
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: auto;
+}
+
+.dots{
+  display: flex; gap: 12px;
+  background: rgba(11,15,22,.75);
+  padding: 12px 22px;
+  border: 1px solid rgba(212,175,55,.18);
+  backdrop-filter: blur(10px);
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+.dot{
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(212,175,55,.25);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all .4s cubic-bezier(.22,1,.36,1);
+  position: relative;
+}
+.dot:hover{ background: rgba(212,175,55,.55); transform: scale(1.3); }
+.dot.active{
+  background: var(--gold);
+  box-shadow: 0 0 14px var(--gold);
+  transform: scale(1.4);
+}
+.dot.active::after{
+  content: '';
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(212,175,55,.5);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse{
+  0%,100%{ transform: scale(1); opacity: .8; }
+  50%    { transform: scale(1.25); opacity: .2; }
+}
+
+.counter{
+  font-family: var(--font-display);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .3em;
+  color: var(--gold);
+  background: rgba(11,15,22,.75);
+  padding: 12px 22px;
+  border: 1px solid rgba(212,175,55,.18);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: baseline; gap: 6px;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+.counter .cur{ font-size: 1.15rem; color: var(--gold-light); }
+.counter .sep{ color: var(--gold-deep); }
+.counter .tot{ color: var(--muted); }
+
+.side-arrow{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  background: rgba(11,15,22,.7);
+  border: 1px solid rgba(212,175,55,.28);
+  color: var(--gold);
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+  transition: all .35s cubic-bezier(.22,1,.36,1);
+  z-index: 105;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.side-arrow:hover{
+  background: rgba(212,175,55,.2);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+.side-arrow:disabled{ opacity: .15; cursor: not-allowed; }
+.side-arrow.left{ left: 2vw; }
+.side-arrow.right{ right: 2vw; }
+.side-arrow svg{ width: 22px; height: 22px; }
+
+.start-hint{
+  font-family: var(--font-display);
+  font-size: .72rem;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 20px;
+  display: flex; align-items: center; gap: 14px;
+  justify-content: center;
+}
+.start-hint .key{
+  display: inline-flex;
+  padding: 4px 12px;
+  border: 1px solid rgba(212,175,55,.35);
+  color: var(--gold);
+  font-size: .66rem;
+}
+
+/* ============================================================
+   СЛАЙД 1 — ТИТУЛ
+   ============================================================ */
+.title-slide{ text-align: center; align-items: center; }
+.title-slide .slide-content{ align-items: center; text-align: center; }
+.title-slide .slide-title{
+  font-size: clamp(1.8rem, 5.5vw, 4.6rem);
+  line-height: 1.05;
+  margin: 16px 0 20px;
+  letter-spacing: .03em;
+}
+
+/* Фото в рамке */
+.photo-frame{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(212,175,55,.15), rgba(212,175,55,.04));
+  border: 1px solid rgba(212,175,55,.4);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.7), 0 0 40px rgba(212,175,55,.12);
+  transition: all .5s cubic-bezier(.22,1,.36,1);
+}
+.photo-frame:hover{
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 30px 60px rgba(0,0,0,.8), 0 0 60px rgba(212,175,55,.25);
+  border-color: var(--gold);
+}
+.photo-frame img{
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+/* Уголки рамки */
+.photo-frame::before,
+.photo-frame::after{
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  border: 2px solid var(--gold);
+  pointer-events: none;
+}
+.photo-frame::before{
+  top: -1px; left: -1px;
+  border-right: none; border-bottom: none;
+}
+.photo-frame::after{
+  bottom: -1px; right: -1px;
+  border-left: none; border-top: none;
+}
+
+.hero-photo{
+  width: clamp(220px, 30vw, 380px);
+  margin: 0 auto 24px;
+  animation: photoFloat 6s ease-in-out infinite;
+}
+@keyframes photoFloat{
+  0%,100%{ transform: translateY(0); }
+  50%    { transform: translateY(-10px); }
+}
+
+/* ============================================================
+   СЛАЙДЫ — ДВЕ КОЛОНКИ (фото + текст)
+   ============================================================ */
+.grid-photo{
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 5vw;
+  align-items: center;
+  width: 100%;
+}
+.grid-photo.reverse{ direction: rtl; }
+.grid-photo.reverse > *{ direction: ltr; }
+
+.photo-col{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-col .photo-frame{ width: 100%; max-width: 440px; }
+
+.text-col{ display: flex; flex-direction: column; gap: 18px; }
+
+/* Блок формулы */
+.formula{
+  font-family: var(--font-mono);
+  font-size: clamp(1.1rem, 2.2vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--gold-light);
+  background: linear-gradient(90deg, rgba(212,175,55,.12), rgba(212,175,55,.03));
+  border-left: 4px solid var(--gold);
+  padding: 16px 22px;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.formula .hl-blue{ color: var(--blue-light); }
+.formula .hl-red{ color: var(--red-light); }
+.formula .plus{ color: var(--gold); margin: 0 .35em; }
+.formula .arrow{ color: var(--gold); margin: 0 .4em; }
+
+/* Маркеры времени */
+.markers{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+.marker{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: .82rem;
+  padding: 6px 14px;
+  border: 1px solid rgba(212,175,55,.3);
+  background: rgba(212,175,55,.06);
+  color: var(--gold-light);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  transition: all .3s;
+}
+.marker:hover{
+  background: rgba(212,175,55,.18);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+/* Примеры */
+.examples{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+.example{
+  font-family: var(--font-display);
+  font-size: clamp(.95rem, 1.5vw, 1.1rem);
+  line-height: 1.55;
+  color: var(--text);
+  padding: 12px 18px;
+  border-left: 2px solid rgba(212,175,55,.35);
+  background: linear-gradient(90deg, rgba(212,175,55,.05), transparent);
+  transition: all .35s;
+}
+.example:hover{
+  border-left-color: var(--gold);
+  background: linear-gradient(90deg, rgba(212,175,55,.12), transparent);
+  padding-left: 24px;
+}
+.example .en{ color: var(--gold-light); }
+.example .ru{ color: var(--muted); font-style: italic; font-size: .9em; display: block; margin-top: 2px; }
+
+/* Мини-факты */
+.mini-facts{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 6px;
+}
+.mini-fact{
+  padding: 12px 16px;
+  border-left: 2px solid rgba(212,175,55,.35);
+  background: linear-gradient(90deg, rgba(212,175,55,.06), transparent);
+  transition: all .4s;
+}
+.mini-fact:hover{
+  border-left-color: var(--gold);
+  background: linear-gradient(90deg, rgba(212,175,55,.14), transparent);
+}
+.mini-fact .lbl{
+  font-family: var(--font-display);
+  font-size: .6rem;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+}
+.mini-fact .val{
+  font-family: var(--font-display);
+  font-size: .92rem;
+  font-weight: 700;
+  color: var(--parchment);
+  letter-spacing: .02em;
+}
+
+/* Теги */
+.tag{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border: 1px solid rgba(212,175,55,.32);
+  font-family: var(--font-display);
+  font-size: .68rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  background: rgba(212,175,55,.06);
+  width: fit-content;
+}
+.tag .tag-dot{
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold);
+}
+.tag.blue{ color: var(--blue-light); border-color: rgba(74,158,255,.35); background: rgba(74,158,255,.08); }
+.tag.blue .tag-dot{ background: var(--blue-light); box-shadow: 0 0 10px var(--blue-light); }
+.tag.red{ color: var(--red-light); border-color: rgba(224,90,90,.35); background: rgba(224,90,90,.08); }
+.tag.red .tag-dot{ background: var(--red-light); box-shadow: 0 0 10px var(--red-light); }
+
+/* Сравнение — таблица */
+.compare-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 10px;
+}
+.compare-col{
+  padding: 22px 24px;
+  border: 1px solid rgba(212,175,55,.2);
+  background: linear-gradient(170deg, rgba(28,37,52,.5), rgba(11,15,22,.85));
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  transition: all .4s;
+}
+.compare-col:hover{
+  transform: translateY(-4px);
+  border-color: rgba(212,175,55,.5);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+}
+.compare-col h4{
+  font-family: var(--font-display);
+  font-size: .92rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.compare-col.blue h4{ color: var(--blue-light); }
+.compare-col.red h4{ color: var(--red-light); }
+.compare-col ul{
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.compare-col li{
+  font-size: .95rem;
+  line-height: 1.5;
+  color: var(--text);
+  padding-left: 18px;
+  position: relative;
+}
+.compare-col li::before{
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--gold-deep);
+}
+.compare-col .en{ color: var(--gold-light); font-size: .92em; }
+
+/* Слайд ошибок */
+.error-list{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+}
+.error-item{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 20px;
+  border-left: 3px solid var(--red);
+  background: linear-gradient(90deg, rgba(224,90,90,.08), transparent);
+  transition: all .4s;
+}
+.error-item:hover{
+  border-left-color: var(--red-light);
+  background: linear-gradient(90deg, rgba(224,90,90,.15), transparent);
+  padding-left: 26px;
+}
+.error-wrong, .error-right{
+  font-family: var(--font-display);
+  font-size: .95rem;
+  line-height: 1.45;
+}
+.error-wrong{ color: var(--red-light); text-decoration: line-through; text-decoration-color: rgba(224,90,90,.5); }
+.error-right{ color: var(--green-light); }
+.error-right .en{ color: var(--green-light); }
+
+/* ============================================================
+   СЛАЙД 8 — АВТОР
+   ============================================================ */
+.author-slide{ text-align: center; align-items: center; }
+.author-slide .slide-content{ align-items: center; text-align: center; }
+
+.author-photo{
+  width: clamp(200px, 26vw, 340px);
+  margin: 0 auto 28px;
+  animation: photoFloat 6s ease-in-out infinite;
+}
+
+.author-name{
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 4.5vw, 3.4rem);
+  line-height: 1.1;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fffdf5 0%, #f5e6a8 35%, #d4af37 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 22px rgba(212,175,55,.4));
+  margin-bottom: 16px;
+}
+
+.author-sub{
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: clamp(1rem, 1.8vw, 1.4rem);
+  color: var(--muted);
+  max-width: 640px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+
+.final-divider{
+  width: 140px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 26px auto;
+}
+
+.final-sign{
+  font-family: var(--font-display);
+  font-size: .74rem;
+  letter-spacing: .38em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.restart-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 38px;
+  margin-top: 24px;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold) 45%, var(--gold-deep));
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  transition: all .35s cubic-bezier(.22,1,.36,1);
+  box-shadow: 0 8px 30px rgba(212,175,55,.3);
+  pointer-events: auto;
+}
+.restart-btn:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(212,175,55,.5);
+}
+
+/* ============================================================
+   АДАПТИВ
+   ============================================================ */
+@media (max-width: 900px){
+  .grid-photo{ grid-template-columns: 1fr; gap: 30px; }
+  .grid-photo.reverse{ direction: ltr; }
+  .photo-col .photo-frame{ max-width: 320px; }
+  .slide{ padding: 9vh 6vw; }
+  .side-arrow{ width: 46px; height: 46px; }
+  .side-arrow.left{ left: 1.5vw; }
+  .side-arrow.right{ right: 1.5vw; }
+  .compare-grid{ grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px){
+  body{ font-size: 16px; }
+  .top-bar{ padding: 16px 4vw; }
+  .bottom-bar{ padding: 16px 4vw; }
+  .brand span{ display: none; }
+  .dots{ padding: 10px 16px; gap: 9px; }
+  .dot{ width: 8px; height: 8px; }
+  .counter{ padding: 10px 16px; font-size: .72rem; }
+  .side-arrow{ width: 42px; height: 42px; }
+  .side-arrow svg{ width: 18px; height: 18px; }
+  .mini-facts{ grid-template-columns: 1fr; }
+  .error-item{ grid-template-columns: 1fr; gap: 6px; }
+}
+
+@media (hover: none){
+  .side-arrow{ opacity: .5; }
+  .start-hint .key{ display: none; }
+}
+
+/* ============================================================
+   ДОП. АНИМАЦИИ
+   ============================================================ */
+.sparkle{ animation: sparkle 2s ease-in-out infinite; }
+.sparkle.s2{ animation-delay: .5s; }
+.sparkle.s3{ animation-delay: 1s; }
+@keyframes sparkle{
+  0%,100%{ opacity: .3; transform: scale(.8); }
+  50%    { opacity: 1; transform: scale(1.2); }
+}
+
+.green-light{ color: #4ade80 !important; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="letters-bg" id="lettersBg"></div>
+
+  <!-- ============================================================
+       СЛАЙД 1 — ТИТУЛ (1.png)
+       ============================================================ -->
+  <section class="slide title-slide" data-slide="1">
+    <div class="slide-number-bg">I</div>
+    <div class="slide-content">
+      <div class="hero-photo anim anim-zoom">
+        <div class="photo-frame">
+          <img src="1.png" alt="Present Simple и Present Continuous">
+        </div>
+      </div>
+      <div class="eyebrow center anim d2">English Grammar · Tenses</div>
+      <h1 class="slide-title anim d3">Present Simple<br>&amp; Present Continuous</h1>
+      <p class="slide-desc anim d4" style="text-align:center;margin:0 auto;">
+        Два настоящих времени английского языка.<br>
+        Когда что использовать — просто и с примерами.
+      </p>
+      <div class="start-hint anim d6">
+        <span class="key">→</span>
+        <span>Листайте стрелками или кликом</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       СЛАЙД 2 — PRESENT SIMPLE: ПРАВИЛО (2.png)
+       ============================================================ -->
+  <section class="slide" data-slide="2">
+    <div class="slide-number-bg">II</div>
+    <div class="slide-content">
+      <div class="grid-photo">
+        <div class="photo-col anim-left d2">
+          <div class="photo-frame">
+            <img src="2.png" alt="Present Simple правило">
+          </div>
+        </div>
+
+        <div class="text-col anim-right d3">
+          <span class="tag blue"><span class="tag-dot"></span>Present Simple · Правило</span>
+          <h2 class="slide-title" style="font-size:clamp(1.6rem,3.6vw,2.6rem);">Простое<br><em>настоящее</em></h2>
+          <p class="body-text">
+            <strong>Present Simple</strong> — простое настоящее время.
+            Используется для <em>фактов, привычек и регулярных действий</em>.
+          </p>
+
+          <div class="formula">
+            I / You / We / They <span class="plus">+</span> <span class="hl-blue">V</span><br>
+            He / She / It <span class="plus">+</span> <span class="hl-blue">V + s</span>
+          </div>
+
+          <div class="mini-facts">
+            <div class="mini-fact">
+              <span class="lbl">Утверждение</span>
+              <span class="val">I work / He works</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Вопрос</span>
+              <span class="val">Do / Does + V?</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Отрицание</span>
+              <span class="val">don't / doesn't + V</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Когда</span>
+              <span class="val">Факты, привычки</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       СЛАЙД 3 — PRESENT SIMPLE: ПРИМЕРЫ (3.png)
+       ============================================================ -->
+  <section class="slide" data-slide="3">
+    <div class="slide-number-bg">III</div>
+    <div class="slide-content">
+      <div class="grid-photo reverse">
+        <div class="photo-col anim-right d2">
+          <div class="photo-frame">
+            <img src="3.png" alt="Present Simple примеры">
+          </div>
+        </div>
+
+        <div class="text-col anim-left d3">
+          <span class="tag blue"><span class="tag-dot"></span>Present Simple · Примеры</span>
+          <h2 class="slide-title" style="font-size:clamp(1.6rem,3.6vw,2.6rem);">Примеры и <em>маркеры</em></h2>
+
+          <div class="examples">
+            <div class="example">
+              <span class="en">She reads books every day.</span>
+              <span class="ru">Она читает книги каждый день.</span>
+            </div>
+            <div class="example">
+              <span class="en">They don't play football on Sundays.</span>
+              <span class="ru">Они не играют в футбол по воскресеньям.</span>
+            </div>
+            <div class="example">
+              <span class="en">Does he speak English?</span>
+              <span class="ru">Он говорит по-английски?</span>
+            </div>
+          </div>
+
+          <div class="markers">
+            <span class="marker">always</span>
+            <span class="marker">usually</span>
+            <span class="marker">often</span>
+            <span class="marker">sometimes</span>
+            <span class="marker">never</span>
+            <span class="marker">every day</span>
+            <span class="marker">on Mondays</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       СЛАЙД 4 — PRESENT CONTINUOUS: ПРАВИЛО (4.png)
+       ============================================================ -->
+  <section class="slide" data-slide="4">
+    <div class="slide-number-bg">IV</div>
+    <div class="slide-content">
+      <div class="grid-photo">
+        <div class="photo-col anim-left d2">
+          <div class="photo-frame">
+            <img src="4.png" alt="Present Continuous правило">
+          </div>
+        </div>
+
+        <div class="text-col anim-right d3">
+          <span class="tag red"><span class="tag-dot"></span>Present Continuous · Правило</span>
+          <h2 class="slide-title" style="font-size:clamp(1.6rem,3.6vw,2.6rem);">Длительное<br><em>настоящее</em></h2>
+          <p class="body-text">
+            <strong>Present Continuous</strong> — настоящее длительное время.
+            Действие происходит <em>прямо сейчас</em>, в момент речи.
+          </p>
+
+          <div class="formula">
+            I <span class="plus">+</span> <span class="hl-red">am</span> <span class="plus">+</span> Ving<br>
+            He / She / It <span class="plus">+</span> <span class="hl-red">is</span> <span class="plus">+</span> Ving<br>
+            You / We / They <span class="plus">+</span> <span class="hl-red">are</span> <span class="plus">+</span> Ving
+          </div>
+
+          <div class="mini-facts">
+            <div class="mini-fact">
+              <span class="lbl">Утверждение</span>
+              <span class="val">I am working</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Вопрос</span>
+              <span class="val">Am / Is / Are + Ving?</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Отрицание</span>
+              <span class="val">am not / isn't / aren't + Ving</span>
+            </div>
+            <div class="mini-fact">
+              <span class="lbl">Когда</span>
+              <span class="val">Сейчас, в момент речи</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       СЛАЙД 5 — PRESENT CONTINUOUS: ПРИМЕРЫ (5.png)
+       ============================================================ -->
+  <section class="slide" data-slide="5">
+    <div class="slide-number-bg">V</div>
+    <div class="slide-content">
+      <div class="grid-photo reverse">
+        <div class="photo-col anim-right d2">
+          <div class="photo-frame">
+            <img src="5.png" alt="Present Continuous примеры">
+          </div>
+        </div>
+
+        <div class="text-col anim-left d3">
+          <span class="tag red"><span class="tag-dot"></span>Present Continuous · Примеры</span>
+          <h2 class="slide-title" style="font-size:clamp(1.6rem,3.6vw,2.6rem);">Примеры и <em>маркеры</em></h2>
+
+          <div class="examples">
+            <div class="example">
+              <span class="en">I am reading a book now.</span>
+              <span class="ru">Я читаю книгу сейчас.</span>
+            </div>
+            <div class="example">
+              <span class="en">He is not sleeping at the moment.</span>
+              <span class="ru">Он не спит в данный момент.</span>
+            </div>
+            <div class="example">
+              <span class="en">Are they playing football?</span>
+              <span class="ru">Они играют в футбол?</span>
+            </div>
+          </div>
+
+          <div class="markers">
+            <span class="marker">now</span>
+            <span class="marker">right now</span>
+            <span class="marker">at the moment</span>
+            <span class="marker">Look!</span>
+            <span class="marker">Listen!</span>
+            <span class="marker">currently</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       СЛАЙД 6 — СРАВНЕНИЕ (6.png)
+       ============================================================ -->
+  <section class="slide" data-slide="6">
+    <div class="slide-number-bg">VI</div>
+    <div class="slide-content">
+      <div class="grid-photo">
+        <div class="photo-col anim-left d2">
+          <div class="photo-frame">
+            <img src="6.png" alt="Сравнение Present Simple и Present Continuous">
+          </div>
+        </div>
+
+        <div class="text-col anim-right d3">
+          <span class="tag"><span class="tag-dot"></span>Сравнение</span>
+          <h2 class="slide-title" style="font-size:clamp(1.6rem,3.6vw,2.6rem);">Simple vs <em>Continuous</em></h2>
+
+          <div class="compare-grid">
+            <div class="compare-col blue">
+              <h4>Present Simple</h4>
+              <ul>
+                <li><span class="en">I <strong>work</strong> every day.</span><br><span style="font-size:.85em;color:var(--muted);font-style:italic;">Я работаю каждый день.</span></li>
+                <li>Регулярно, всегда, по расписанию</li>
+                <li>Факты и привычки</li>
+                <li>Маркеры: <span class="en">always, usually, every day</span></li>
+              </ul>
+            </div>
+            <div class="compare-col red">
+              <h4>Present Continuous</h4>
+              <ul>
+                <li><span class="en">I <strong>am working</strong> now.</span><br><span style="font-size:.85em;color:var(--muted);font-style:italic;">Я работаю сейчас.</span></li>
+                <li>Прямо сейчас, в момент речи</li>
+                <li>Временные действия</li>
+                <li>Маркеры: <span class="en">now, at the moment, Look!</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       СЛАЙД 7 — ОШИБКИ / ШПАРГАЛКА (7.png)
+       ============================================================ -->
+  <section class="slide" data-slide="7">
+    <div class="slide-number-bg">VII</div>
+    <div class="slide-content">
+      <div class="grid-photo reverse">
+        <div class="photo-col anim-right d2">
+          <div class="photo-frame">
+            <img src="7.png" alt="Типичные ошибки Present Simple и Present Continuous">
+          </div>
+        </div>
+
+        <div class="text-col anim-left d3">
+          <span class="tag red"><span class="tag-dot"></span>Шпаргалка · Ошибки</span>
+          <h2 class="slide-title" style="font-size:clamp(1.6rem,3.6vw,2.6rem);">Частые <em>ошибки</em></h2>
+
+          <div class="error-list">
+            <div class="error-item">
+              <div class="error-wrong">He work every day.</div>
+              <div class="error-right"><span class="en green-light">He works every day.</span> <span style="color:var(--muted);font-size:.85em;">(+s в 3-м лице)</span></div>
+            </div>
+            <div class="error-item">
+              <div class="error-wrong">She is knowing the answer.</div>
+              <div class="error-right"><span class="en green-light">She knows the answer.</span> <span style="color:var(--muted);font-size:.85em;">(know — не в Continuous)</span></div>
+            </div>
+            <div class="error-item">
+              <div class="error-wrong">I am work now.</div>
+              <div class="error-right"><span class="en green-light">I am working now.</span> <span style="color:var(--muted);font-size:.85em;">(нужен Ving)</span></div>
+            </div>
+            <div class="error-item">
+              <div class="error-wrong">He don't play.</div>
+              <div class="error-right"><span class="en green-light">He doesn't play.</span> <span style="color:var(--muted);font-size:.85em;">(doesn't для he/she/it)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       СЛАЙД 8 — АВТОР (8.png)
+       ============================================================ -->
+  <section class="slide author-slide" data-slide="8">
+    <div class="slide-number-bg">VIII</div>
+    <div class="slide-content">
+      <div class="author-photo anim anim-zoom">
+        <div class="photo-frame">
+          <img src="8.png" alt="Автор презентации">
+        </div>
+      </div>
+
+      <div class="eyebrow center anim d2">Эпилог · Автор</div>
+      <h2 class="author-name anim d3">Ионцев Михаил</h2>
+      <p class="author-sub anim d4">
+        Этот шедевр создал Ионцев Михаил.<br>
+        Present Simple &amp; Present Continuous — просто, красиво, понятно.
+      </p>
+
+      <div class="final-divider anim d5"></div>
+      <div class="final-sign anim d5">English Grammar · 2026</div>
+      <div class="final-divider anim d5"></div>
+
+      <button class="restart-btn anim d6" id="restartBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12 A9 9 0 1 0 12 3"/>
+          <path d="M3 3 V8 H8"/>
+        </svg>
+        Смотреть заново
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- ИНТЕРФЕЙС -->
+<div class="deck-ui">
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="top-bar">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 12 L 50 14 L 46 52 L 18 50 Z"/>
+        <path d="M22 24 H 42 M22 32 H 44 M22 40 H 40"/>
+        <path d="M50 14 C 58 18 58 26 52 30" opacity=".5"/>
+      </svg>
+      <span>English Tenses</span>
+    </div>
+    <div class="top-actions">
+      <button class="top-btn" id="fullscreenBtn" title="Полный экран">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9 V4 H9"/>
+          <path d="M15 4 H20 V9"/>
+          <path d="M20 15 V20 H15"/>
+          <path d="M9 20 H4 V15"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <button class="side-arrow left" id="prevBtn" title="Назад">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 6 L9 12 L15 18"/>
+    </svg>
+  </button>
+  <button class="side-arrow right" id="nextBtn" title="Вперёд">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 6 L15 12 L9 18"/>
+    </svg>
+  </button>
+
+  <div class="bottom-bar">
+    <div class="dots" id="dots"></div>
+    <div class="counter">
+      <span class="cur" id="counterCur">1</span>
+      <span class="sep">/</span>
+      <span class="tot" id="counterTot">8</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   БУКВЫ НА ФОНЕ
+   ============================================================ */
+(function initLetters(){
+  const layer = document.getElementById('lettersBg');
+  const letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+                   'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+  let html = '';
+  for (let i = 0; i < 55; i++){
+    const size = (14 + Math.random() * 34).toFixed(1);
+    const letter = letters[Math.floor(Math.random() * letters.length)];
+    html += `<span class="letter-particle" style="
+      left:${(Math.random()*100).toFixed(2)}%;
+      bottom:-40px;
+      font-size:${size}px;
+      animation-duration:${(16 + Math.random()*18).toFixed(1)}s;
+      animation-delay:${(Math.random()*22).toFixed(1)}s;
+      --drift:${(Math.random()*200 - 100).toFixed(0)}px;
+      --rise:${(-100 - Math.random()*30).toFixed(0)}vh;
+      --rot:${(Math.random()*360 - 180).toFixed(0)}deg;
+    ">${letter}</span>`;
+  }
+  layer.innerHTML = html;
+})();
+
+/* ============================================================
+   ПРЕЗЕНТАЦИЯ
+   ============================================================ */
+(function initDeck(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  let animating = false;
+
+  const dotsWrap   = document.getElementById('dots');
+  const counterCur = document.getElementById('counterCur');
+  const counterTot = document.getElementById('counterTot');
+  const progress   = document.getElementById('progressFill');
+  const prevBtn    = document.getElementById('prevBtn');
+  const nextBtn    = document.getElementById('nextBtn');
+
+  counterTot.textContent = total;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.setAttribute('aria-label', 'Слайд ' + (i + 1));
+    d.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  function goTo(index, direction){
+    if (animating) return;
+    if (index < 0 || index >= total) return;
+    if (index === current) return;
+
+    animating = true;
+
+    const old = slides[current];
+    const nw  = slides[index];
+
+    const dir = direction !== undefined
+      ? direction
+      : (index > current ? 'next' : 'prev');
+
+    old.classList.remove('active');
+    old.classList.add(dir === 'next' ? 'prev' : 'next');
+
+    nw.classList.remove('prev', 'next');
+    void nw.offsetWidth;
+    nw.classList.add('active');
+
+    current = index;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    counterCur.textContent = current + 1;
+    progress.style.width = ((current + 1) / total * 100) + '%';
+
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+
+    setTimeout(() => {
+      old.classList.remove('prev', 'next');
+      animating = false;
+    }, 850);
+  }
+
+  function next(){ if (current < total - 1) goTo(current + 1, 'next'); }
+  function prev(){ if (current > 0) goTo(current - 1, 'prev'); }
+
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+
+  document.addEventListener('keydown', (e) => {
+    switch (e.key){
+      case 'ArrowRight':
+      case 'ArrowDown':
+      case ' ':
+      case 'PageDown':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+      case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home':
+        e.preventDefault(); goTo(0, 'prev'); break;
+      case 'End':
+        e.preventDefault(); goTo(total - 1, 'next'); break;
+    }
+  });
+
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)){
+      if (dx < 0) next();
+      else prev();
+    }
+  }, { passive: true });
+
+  let wheelLock = false;
+  document.addEventListener('wheel', (e) => {
+    if (wheelLock) return;
+    if (Math.abs(e.deltaY) < 30) return;
+    wheelLock = true;
+    if (e.deltaY > 0) next();
+    else prev();
+    setTimeout(() => wheelLock = false, 900);
+  }, { passive: true });
+
+  const fsBtn = document.getElementById('fullscreenBtn');
+  fsBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement){
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    goTo(0, 'prev');
+  });
+
+  slides[0].classList.add('active');
+  progress.style.width = (1 / total * 100) + '%';
+  prevBtn.disabled = true;
+  nextBtn.disabled = total <= 1;
+})();
+</script>
+
+</body>
+</html>
