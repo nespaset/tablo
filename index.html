@@ -1,336 +1,1082 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Монгольское войско</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #0f1115;
-            --text-main: #e0e0e0;
-            --gold: #d4af37;
-            --bronze: #cd7f32;
-            --card-bg: rgba(30, 34, 40, 0.7);
-            --border-color: rgba(212, 175, 55, 0.3);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Звёздная презентация · Три темы</title>
+<style>
+  /* ============ RESET & BASE ============ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0: #05060f;
+    --bg-1: #0a0a20;
+    --bg-2: #12102e;
+    --accent: #7c5cff;
+    --accent-2: #22d3ee;
+    --accent-3: #f472b6;
+    --text: #e7e9ff;
+    --muted: #9aa3c7;
+    --glass: rgba(255,255,255,0.06);
+    --glass-strong: rgba(255,255,255,0.12);
+    --border: rgba(255,255,255,0.14);
+    --shadow: 0 20px 60px rgba(0,0,0,0.55);
+  }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: radial-gradient(ellipse at top, var(--bg-2) 0%, var(--bg-1) 40%, var(--bg-0) 100%);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  canvas#stars {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  /* ============ DECORATIVE NEBULAS ============ */
+  .nebula {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    z-index: 0;
+    pointer-events: none;
+    animation: floatNebula 20s ease-in-out infinite;
+  }
+  .nebula.n1 {
+    width: 520px; height: 520px;
+    background: radial-gradient(circle, #7c5cff 0%, transparent 70%);
+    top: -150px; left: -150px;
+  }
+  .nebula.n2 {
+    width: 620px; height: 620px;
+    background: radial-gradient(circle, #22d3ee 0%, transparent 70%);
+    bottom: -200px; right: -180px;
+    animation-delay: -7s;
+  }
+  .nebula.n3 {
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, #f472b6 0%, transparent 70%);
+    top: 40%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: -14s;
+  }
+  @keyframes floatNebula {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(30px, -30px) scale(1.1); }
+  }
 
-        body {
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(205, 127, 50, 0.05) 0%, transparent 50%);
-            color: var(--text-main);
-            font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
+  /* ============ APP LAYER ============ */
+  .app {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
 
-        /* Контейнер для слайдов */
-        .slide {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-            position: relative;
-            opacity: 0;
-            transform: translateY(50px);
-            transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1), transform 1s cubic-bezier(0.25, 1, 0.5, 1);
-        }
+  /* ============ HEADER ============ */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(10, 10, 30, 0.25);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .logo .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 18px var(--accent);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.25); opacity: 0.7; }
+  }
+  .back-btn {
+    display: none;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--glass);
+    color: var(--text);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  .back-btn:hover {
+    background: var(--glass-strong);
+    border-color: var(--accent-2);
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+  }
 
-        .slide.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+  /* ============ SCREEN TRANSITION ============ */
+  .screen {
+    position: absolute;
+    inset: 0;
+    padding: 90px 40px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+    pointer-events: none;
+    transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .screen.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+  }
 
-        /* Титульный экран */
-        .hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(2.5rem, 6vw, 5rem);
-            color: var(--gold);
-            text-align: center;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-            margin-bottom: 20px;
-        }
+  /* ============ HOME: TOPIC SELECT ============ */
+  .home-title {
+    font-size: clamp(2.2rem, 5vw, 4.2rem);
+    font-weight: 800;
+    text-align: center;
+    background: linear-gradient(135deg, #fff 0%, #7c5cff 50%, #22d3ee 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  .home-sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 50px;
+    max-width: 600px;
+  }
+  .topics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    width: 100%;
+    max-width: 1200px;
+  }
+  @media (max-width: 900px) {
+    .topics { grid-template-columns: 1fr; max-width: 500px; }
+  }
+  .topic-card {
+    position: relative;
+    padding: 36px 28px 32px;
+    border-radius: 22px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow);
+  }
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 22px;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--g1), var(--g2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .topic-card::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    opacity: 0.15;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .topic-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: transparent;
+  }
+  .topic-card:hover::before { opacity: 1; }
+  .topic-card:hover::after { opacity: 0.4; }
 
-        .hero p {
-            font-size: clamp(1rem, 2vw, 1.2rem);
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            color: #888;
-            text-align: center;
-        }
+  .topic-card.t1 { --g1: #7c5cff; --g2: #22d3ee; --glow: #7c5cff; }
+  .topic-card.t2 { --g1: #10b981; --g2: #22d3ee; --glow: #10b981; }
+  .topic-card.t3 { --g1: #f472b6; --g2: #f59e0b; --glow: #f472b6; }
 
-        /* Карточки контента */
-        .content-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: clamp(20px, 5vw, 50px);
-            max-width: 900px;
-            width: 100%;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
-        }
+  .topic-icon {
+    font-size: 3.2rem;
+    margin-bottom: 18px;
+    display: inline-block;
+    filter: drop-shadow(0 4px 20px var(--glow));
+    transition: transform 0.5s;
+  }
+  .topic-card:hover .topic-icon { transform: rotate(-8deg) scale(1.1); }
+  .topic-num {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .topic-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .topic-desc {
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .topic-arrow {
+    position: absolute;
+    bottom: 24px; right: 24px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--glass);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    transition: all 0.4s;
+  }
+  .topic-card:hover .topic-arrow {
+    background: var(--glass-strong);
+    transform: translateX(5px);
+  }
 
-        .content-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1);
-            border-color: rgba(212, 175, 55, 0.6);
-        }
+  /* ============ SLIDES ============ */
+  .slide-container {
+    width: 100%;
+    max-width: 1100px;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .slide-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .slide-topic-label {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    background: var(--glass);
+  }
+  .slide-topic-label.s1 { color: #22d3ee; border-color: rgba(34, 211, 238, 0.4); }
+  .slide-topic-label.s2 { color: #10b981; border-color: rgba(16, 185, 129, 0.4); }
+  .slide-topic-label.s3 { color: #f472b6; border-color: rgba(244, 114, 182, 0.4); }
 
-        h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--gold);
-            font-size: clamp(1.5rem, 3vw, 2.2rem);
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px;
-        }
+  .slide-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .slide-subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+  }
+  .slide-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+  }
+  .slide-body::-webkit-scrollbar { width: 6px; }
+  .slide-body::-webkit-scrollbar-track { background: transparent; }
+  .slide-body::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
 
-        .subtitle {
-            font-size: 1.2rem;
-            color: var(--bronze);
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
+  .slide-card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    line-height: 1.65;
+    animation: slideUp 0.6s ease backwards;
+  }
+  .slide-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+  }
+  .slide-card h3 .num {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .slide-card p, .slide-card li {
+    font-size: 1rem;
+    color: var(--text);
+  }
+  .slide-card ul {
+    list-style: none;
+    margin-top: 10px;
+  }
+  .slide-card li {
+    padding: 10px 0 10px 28px;
+    position: relative;
+    border-bottom: 1px dashed rgba(255,255,255,0.08);
+  }
+  .slide-card li:last-child { border-bottom: none; }
+  .slide-card li::before {
+    content: '✦';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    color: var(--accent-2);
+    font-size: 14px;
+  }
+  .slide-card .term {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 8px;
+    background: rgba(124, 92, 255, 0.18);
+    color: #c4b5fd;
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin: 2px 2px;
+    border: 1px solid rgba(124, 92, 255, 0.3);
+  }
+  .slide-card .term.green { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+  .slide-card .term.pink { background: rgba(244, 114, 182, 0.18); color: #f9a8d4; border-color: rgba(244, 114, 182, 0.3); }
+  .slide-card .term.yellow { background: rgba(251, 191, 36, 0.18); color: #fcd34d; border-color: rgba(251, 191, 36, 0.3); }
+  .slide-card .term.cyan { background: rgba(34, 211, 238, 0.18); color: #67e8f9; border-color: rgba(34, 211, 238, 0.3); }
 
-        ul {
-            list-style: none;
-            margin-bottom: 25px;
-        }
+  .highlight-box {
+    margin-top: 16px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(124,92,255,0.15) 0%, rgba(34,211,238,0.1) 100%);
+    border-left: 3px solid var(--accent);
+    font-size: 0.95rem;
+  }
+  .highlight-box b { color: var(--accent-2); }
 
-        li {
-            margin-bottom: 15px;
-            position: relative;
-            padding-left: 30px;
-        }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
 
-        li::before {
-            content: '⚔️';
-            position: absolute;
-            left: 0;
-            top: 2px;
-            font-size: 0.9em;
-        }
+  .zone-card {
+    padding: 20px;
+    border-radius: 14px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    transition: transform 0.3s;
+  }
+  .zone-card:hover { transform: translateY(-4px); }
+  .zone-card .zone-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .zone-card .zone-climate {
+    color: var(--accent-2);
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+  }
+  .zone-card .zone-act {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
 
-        .highlight {
-            color: var(--gold);
-            font-weight: 600;
-        }
+  /* ============ NAV CONTROLS ============ */
+  .nav-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 18px;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+  }
+  .nav-btn {
+    padding: 12px 26px;
+    border: 1px solid var(--border);
+    background: var(--glass);
+    color: var(--text);
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+  }
+  .nav-btn:hover:not(:disabled) {
+    background: var(--glass-strong);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 92, 255, 0.3);
+  }
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .progress-wrap {
+    flex: 1;
+    max-width: 300px;
+    margin: 0 30px;
+  }
+  .progress-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .progress-text {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
 
-        /* Схема иерархии */
-        .hierarchy {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
-        }
+  /* ============ ANIMATIONS ============ */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide-card:nth-child(1) { animation-delay: 0.05s; }
+  .slide-card:nth-child(2) { animation-delay: 0.15s; }
+  .slide-card:nth-child(3) { animation-delay: 0.25s; }
+  .slide-card:nth-child(4) { animation-delay: 0.35s; }
 
-        .hierarchy-step {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid var(--bronze);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            flex: 1 1 100px;
-            transition: all 0.3s ease;
-        }
+  /* ============ SHOOTING STAR ============ */
+  .shooting-star {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 6px 1px #fff;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .shooting-star::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.8), transparent);
+    transform: translateY(-50%);
+  }
 
-        .hierarchy-step:hover {
-            background: rgba(212, 175, 55, 0.2);
-            transform: scale(1.05);
-        }
-
-        .hierarchy-step strong {
-            display: block;
-            font-size: 1.5rem;
-            color: var(--gold);
-        }
-
-        .hierarchy-step span {
-            font-size: 0.9rem;
-            color: #aaa;
-        }
-
-        /* Эффект для цитаты во втором вопросе */
-        .quote-box {
-            background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(212, 175, 55, 0.05));
-            border-left: 4px solid var(--gold);
-            padding: 20px;
-            margin: 25px 0;
-            font-style: italic;
-            font-size: 1.2rem;
-            border-radius: 0 10px 10px 0;
-            text-align: center;
-        }
-
-        .math-equation {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .math-part {
-            color: var(--gold);
-            background: rgba(0,0,0,0.3);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .math-sign {
-            color: #888;
-        }
-
-        /* Индикатор прокрутки */
-        .scroll-down {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: bounce 2s infinite;
-            color: var(--gold);
-            font-size: 2rem;
-            opacity: 0.7;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
-            40% { transform: translateY(-20px) translateX(-50%); }
-            60% { transform: translateY(-10px) translateX(-50%); }
-        }
-
-        /* Адаптивность */
-        @media (max-width: 600px) {
-            .hierarchy { flex-direction: column; align-items: stretch; }
-            .math-equation { flex-direction: column; gap: 10px; }
-            .math-sign { transform: rotate(90deg); }
-        }
-    </style>
+  /* ============ MOBILE ============ */
+  @media (max-width: 600px) {
+    .topbar { padding: 12px 16px; }
+    .screen { padding: 80px 18px 20px; }
+    .slide-card { padding: 18px 16px; }
+    .nav-btn { padding: 10px 16px; font-size: 12px; }
+    .progress-wrap { max-width: 140px; margin: 0 10px; }
+  }
+</style>
 </head>
 <body>
 
-    <!-- Слайд 1: Титульный -->
-    <section class="slide hero">
-        <h1>Империя Чингисхана</h1>
-        <p>Устройство армии и секреты побед</p>
-        <div class="scroll-down">↓</div>
-    </section>
+<canvas id="stars"></canvas>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="nebula n3"></div>
 
-    <!-- Слайд 2: Вопрос 1 (Организация) -->
-    <section class="slide">
-        <div class="content-card">
-            <h2>1. Как было организовано монгольское войско?</h2>
-            <p>Основой организации была <span class="highlight">десятичная система</span>, которая обеспечивала невероятную гибкость и управляемость.</p>
-            
-            <div class="hierarchy">
-                <div class="hierarchy-step">
-                    <strong>10</strong>
-                    <span>Арбан (десяток)</span>
-                </div>
-                <div class="hierarchy-step">
-                    <strong>100</strong>
-                    <span>Джагун (сотня)</span>
-                </div>
-                <div class="hierarchy-step">
-                    <strong>1000</strong>
-                    <span>Минган (тысяча)</span>
-                </div>
-                <div class="hierarchy-step">
-                    <strong>10000</strong>
-                    <span>Тумен (тьма)</span>
-                </div>
-            </div>
+<div class="app">
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="logo">
+      <span class="dot"></span>
+      <span>Stellar · Презентация</span>
+    </div>
+    <button class="back-btn" id="backBtn">← Назад к темам</button>
+  </div>
 
-            <ul>
-                <li>Командиры назначались по <span class="highlight">заслугам и таланту</span>, а не по знатности рода (принцип меритократии).</li>
-                <li>Армия делилась на легкую (лучники) и тяжелую (копейщики, мечники) кавалерию.</li>
-                <li>Существовала личная гвардия хана — <span class="highlight">Кэшик</span>, состоящая из лучших воинов.</li>
-            </ul>
+  <!-- ============ HOME SCREEN ============ -->
+  <div class="screen active" id="screen-home">
+    <h1 class="home-title">Выберите тему</h1>
+    <p class="home-sub">Три путешествия сквозь звёзды знания: история, биология и русский язык. Нажмите на карточку, чтобы начать.</p>
+    <div class="topics">
+      <div class="topic-card t1" data-topic="history">
+        <div class="topic-num">ТЕМА 01</div>
+        <div class="topic-icon">🏛️</div>
+        <div class="topic-name">История</div>
+        <div class="topic-desc">Доколумбова Америка: древние цивилизации, три природные зоны и загадки прошлого континента.</div>
+        <div class="topic-arrow">→</div>
+      </div>
+      <div class="topic-card t2" data-topic="biology">
+        <div class="topic-num">ТЕМА 02</div>
+        <div class="topic-icon">🌱</div>
+        <div class="topic-name">Биология</div>
+        <div class="topic-desc">Условия прорастания семян: вода, температура, воздух, свет и жизнь внутри зернышка.</div>
+        <div class="topic-arrow">→</div>
+      </div>
+      <div class="topic-card t3" data-topic="russian">
+        <div class="topic-num">ТЕМА 03</div>
+        <div class="topic-icon">📖</div>
+        <div class="topic-name">Русский язык</div>
+        <div class="topic-desc">Лексика: однозначные и многозначные слова, синонимы, антонимы, омонимы и заимствования.</div>
+        <div class="topic-arrow">→</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HISTORY SCREEN ============ -->
+  <div class="screen" id="screen-history">
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-topic-label s1">🏛️ История · Доколумбова Америка</span>
+        <h2 class="slide-title">Тайны древнего континента</h2>
+        <div class="slide-subtitle">3 вопроса о цивилизациях, существовавших до 1492 года</div>
+      </div>
+
+      <div class="slide-body">
+        <!-- Q1 -->
+        <div class="slide-card">
+          <h3><span class="num">1</span> Какой цивилизации принадлежит памятник доколумбовой Америки?</h3>
+          <p>До прихода Колумба на территории Нового Света существовало несколько высокоразвитых цивилизаций. Памятники, о которых чаще всего идёт речь, принадлежат трём главным культурам:</p>
+          <ul>
+            <li><span class="term cyan">Майя</span> — пирамиды Чичен-Ица, Паленке, Тикаль (Мексика, Гватемала). Знамениты календарём, иероглифами и астрономией.</li>
+            <li><span class="term green">Ацтеки</span> — столица Теночтитлан, храмы-теокалли (территория современной Мексики).</li>
+            <li><span class="term yellow">Инки</span> — Мачу-Пикчу, город Куско, огромная империя Тауантинсуйу (Андские горы, Перу).</li>
+          </ul>
+          <div class="highlight-box">
+            <b>Важно:</b> если в задании упоминается конкретный памятник — смотрим на его архитектуру. Ступенчатые пирамиды с обсерваторией — <b>майя</b>, каменные террасы в горах — <b>инки</b>, храмы-пирамиды с жертвенниками в долине — <b>ацтеки</b>.
+          </div>
         </div>
-    </section>
 
-    <!-- Слайд 3: Вопрос 1 (Дисциплина) -->
-    <section class="slide">
-        <div class="content-card">
-            <h2>В чём заключался секрет «железной дисциплины»?</h2>
-            
-            <p class="subtitle">Свод законов «Яса»</p>
-            <ul>
-                <li>Жесточайшие наказания за трусость, предательство и нарушение приказов.</li>
-                <li>Принцип <span class="highlight">круговой поруки</span>: если воин бежал с поля боя, казнили весь его десяток. Если бежал десяток — казнили сотню.</li>
-                <li>Абсолютное подчинение командирам: любой приказ выполнялся беспрекословно.</li>
-                <li>Суровая система обучения и постоянные военные смотры.</li>
-            </ul>
-            <p>Именно дисциплина, а не только численность, превратила монголов в самую грозную армию своего времени.</p>
-        </div>
-    </section>
-
-    <!-- Слайд 4: Вопрос 2 -->
-    <section class="slide">
-        <div class="content-card">
-            <h2>2. Выражение «тьма тьмущая»</h2>
-            
-            <div class="quote-box">
-                «Как связано это выражение с устройством монгольской армии?»
+        <!-- Q2 -->
+        <div class="slide-card">
+          <h3><span class="num">2</span> Три зоны древней Америки и влияние природы на жизнь людей</h3>
+          <p>Природа континента очень разнообразна — от тропических джунглей до высокогорий и засушливых плато. Выделяют <b>три основные природно-культурные зоны</b>:</p>
+          <div class="grid-2" style="margin-top:16px;">
+            <div class="zone-card">
+              <div class="zone-name">🌿 Мезоамерика (тропики)</div>
+              <div class="zone-climate">Влажный жаркий климат, плодородные почвы</div>
+              <div class="zone-act">Земледелие (маис, фасоль, тыква, какао), оседлые города, развитые религия и письмо. Именно здесь жили <b>майя, ольмеки, ацтеки</b>.</div>
             </div>
-
-            <p>Всё дело в административной единице монгольской армии — <span class="highlight">Тумене</span> (10 000 воинов).</p>
-            
-            <div class="math-equation">
-                <div class="math-part">Тумен</div>
-                <div class="math-sign">=</div>
-                <div class="math-part">10 000</div>
-                <div class="math-sign">=</div>
-                <div class="math-part">Тьма (на Руси)</div>
+            <div class="zone-card">
+              <div class="zone-name">⛰️ Андийская зона (горы)</div>
+              <div class="zone-climate">Высокогорье, прохладный климат, террасы</div>
+              <div class="zone-act">Террасное земледелие (картофель, кукуруза), разведение лам и альпак, строительство каменных городов. Здесь жили <b>инки и чибча</b>.</div>
             </div>
-
-            <p>На Руси монгольское слово «тумен» перевели как <span class="highlight">«тьма»</span>. Когда русские летописцы видели огромное войско, состоящее из нескольких туменов, они писали: <em>«пришла тьма тьмущая»</em> (то есть десятки тысяч воинов).</p>
-            
-            <p>Со временем военное значение забылось, и фразеологизм «тьма тьмущая» стал означать просто <span class="highlight">несметное, неисчислимое множество</span> кого-либо или чего-либо.</p>
+            <div class="zone-card">
+              <div class="zone-name">🏜️ Аридные и северные области</div>
+              <div class="zone-climate">Засушливые пустыни, степи, леса</div>
+              <div class="zone-act">Охота (бизоны, олени), собирательство, кочевой и полукочевой образ жизни. Здесь жили <b>индейцы Великих равнин</b> и племена Северной Америки.</div>
+            </div>
+          </div>
+          <div class="highlight-box">
+            <b>Вывод:</b> именно природа определяла, чем занимались люди. Там, где тепло и плодородно — появлялись города и империи. В горах — террасное хозяйство. В суровых зонах — охота и кочевье.
+          </div>
         </div>
-    </section>
 
-    <script>
-        // Скрипт для анимации появления элементов при прокрутке
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.2 // Элемент появится, когда покажется на 20%
-        };
+        <!-- Q3 -->
+        <div class="slide-card">
+          <h3><span class="num">3</span> Что означает «доколумбова Америка»? Одна цивилизация или разные?</h3>
+          <p>Словосочетание <span class="term">«доколумбова Америка»</span> означает <b>всю совокупность культур и народов</b>, живших на Американском континенте <b>до открытия его Христофором Колумбом в 1492 году</b>.</p>
+          <ul>
+            <li>Речь идёт <b>НЕ об одной</b> цивилизации, а о множестве — от примитивных охотничьих племён до мощных империй.</li>
+            <li>Сюда входят <b>майя, ацтеки, инки, ольмеки, тольтеки, чибча, пуэбло, ирокезы, чероки</b> и сотни других народов.</li>
+            <li>У каждого народа был свой язык, религия, уклад жизни и уровень развития.</li>
+          </ul>
+          <div class="highlight-box">
+            <b>Запомните:</b> «доколумбова Америка» — это <b>сборный термин</b>, а не название одной цивилизации. Это целая эпоха и географический регион до 1492 года.
+          </div>
+        </div>
+      </div>
 
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    // Если хотите, чтобы анимация срабатывала только один раз, раскомментируйте строку ниже:
-                    // observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
+      <!-- NAV -->
+      <div class="nav-controls">
+        <button class="nav-btn" id="history-home">← К темам</button>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+          <div class="progress-text">Все 3 вопроса раскрыты</div>
+        </div>
+        <button class="nav-btn" id="history-next" disabled>Далее →</button>
+      </div>
+    </div>
+  </div>
 
-        document.querySelectorAll('.slide').forEach(slide => {
-            observer.observe(slide);
-        });
-    </script>
+  <!-- ============ BIOLOGY SCREEN ============ -->
+  <div class="screen" id="screen-biology">
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-topic-label s2">🌱 Биология · Семена</span>
+        <h2 class="slide-title">Условия прорастания семян</h2>
+        <div class="slide-subtitle">Что нужно маленькому семени, чтобы стать большим растением</div>
+      </div>
+
+      <div class="slide-body">
+        <div class="slide-card">
+          <h3><span class="num">✦</span> Вступление: что такое прорастание?</h3>
+          <p>Прорастанiem (проращиванием) называют <b>переход семени от состояния покоя к активной жизни</b>. Внутри семени уже есть зародыш — будущий корешок, стебелёк и семядоли. Чтобы он «проснулся», нужны особые условия.</p>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">1</span> 💧 Вода</h3>
+          <p>Главное условие! Семя должно <b>набухнуть</b>, чтобы оболочкика размягчилась и открылся доступ к зародышу. Вода запускает все биохимические процессы: дыхание, распад запасных питательных веществ, рост клеток.</p>
+          <div class="highlight-box">
+            <b>Без воды</b> семя остаётся в состоянии покоя — иногда <b>годами и даже столетиями</b> (известны случаи прорастания семян возрастом более 2000 лет!).
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">2</span> 🌡️ Тепло (температура)</h3>
+          <p>Каждому виду нужна своя температура. В целом семена делят на две группы:</p>
+          <ul>
+            <li><span class="term cyan">Холодостойкие</span> — горох, редис, укроп, морковь. Прорастают уже при +1…+5 °C.</li>
+            <li><span class="term yellow">Теплолюбивые</span> — огурцы, тыква, фасоль, кукуруза. Требуют +12…+18 °C и выше.</li>
+          </ul>
+          <p>Оптимальная температура для большинства — <b>+20…+25 °C</b>. При слишком высокой (> 45 °C) зародыш погибает.</p>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">3</span> 💨 Воздух (кислород)</h3>
+          <p>Прорастающее семя <b>интенсивно дышит</b>, как и любое живое существо. Кислород нужен для расщепления питательных веществ и получения энергии.</p>
+          <ul>
+            <li>Именно поэтому семена <b>не сажают слишком глубоко</b> — им может не хватить воздуха.</li>
+            <li>Почва должна быть <b>рыхлой</b>, а не плотной и не заболоченной.</li>
+            <li>Рис — исключение: его семена прорастают даже в воде (но это особенность растения).</li>
+          </ul>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">4</span> ☀️ Свет</h3>
+          <p>Для большинства семян свет <b>не обязателен</b> на этапе прорастания. Но есть исключения:</p>
+          <ul>
+            <li><b>Требуют света</b> — петуния, сельдерей, салат (их сеют поверхностно).</li>
+            <li><b>Требуют темноты</b> — фасоль, горох, флоксы (их слегка присыпают землёй).</li>
+          </ul>
+          <div class="highlight-box">
+            После прорастания свет становится <b>критически важен</b> — ростку нужен фотосинтез, иначе он погибнет.
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">5</span> 🌰 Качество самого семени</h3>
+          <p>Даже идеальные условия не помогут, если:</p>
+          <ul>
+            <li>Зародыш <b>мёртвый</b> (семя пересушено или слишком старое).</li>
+            <li>Семя находится <b>в состоянии покоя</b> — нужна стратификация (зимнее охлаждение) или скарификация (повреждение оболочки).</li>
+            <li>Семя <b>повреждено вредителями</b> или грибками.</li>
+          </ul>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">⚡</span> Коротко: 4 главных условия</h3>
+          <div class="grid-2" style="margin-top:10px;">
+            <div class="zone-card">
+              <div class="zone-name">💧 Вода</div>
+              <div class="zone-act">Набухание и запуск биохимических процессов</div>
+            </div>
+            <div class="zone-card">
+              <div class="zone-name">🌡️ Тепло</div>
+              <div class="zone-act">Своя температура для каждого вида</div>
+            </div>
+            <div class="zone-card">
+              <div class="zone-name">💨 Воздух</div>
+              <div class="zone-act">Кислород для дыхания и энергии</div>
+            </div>
+            <div class="zone-card">
+              <div class="zone-name">☀️ Свет</div>
+              <div class="zone-act">Нужен не всем — зависит от растения</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <button class="nav-btn" id="bio-home">← К темам</button>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+          <div class="progress-text">Все условия рассмотрены</div>
+        </div>
+        <button class="nav-btn" id="bio-next" disabled>Далее →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RUSSIAN SCREEN ============ -->
+  <div class="screen" id="screen-russian">
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-topic-label s3">📖 Русский язык · Лексика</span>
+        <h2 class="slide-title">Лексическое значение слов</h2>
+        <div class="slide-subtitle">Все виды значений и групп слов в русском языке</div>
+      </div>
+
+      <div class="slide-body">
+        <div class="slide-card">
+          <h3><span class="num">✦</span> Что такое лексическое значение?</h3>
+          <p><span class="term pink">Лексическое значение слова</span> — это то, что слово обозначает, его <b>смысл</b>, связанный с определённым предметом, действием или признаком. Изучает значения раздел языка — <b>лексикология</b>.</p>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">1</span> Однозначные и многозначные слова</h3>
+          <p>По количеству значений слова делятся на две группы:</p>
+          <ul>
+            <li><span class="term">Однозначные</span> — имеют только одно значение. Обычно это имена собственные, термины, новые слова.<br>
+              Примеры: <b>Москва</b>, <b>троллейбус</b>, <b>принтер</b>, <b>синус</b>, <b>Байкал</b>.</li>
+            <li><span class="term green">Многозначные</span> — имеют несколько связанных между собой значений.<br>
+              Пример: <b>идти</b> — 1) человек идёт, 2) часы идут, 3) дождь идёт, 4) письмо идёт (по почте), 5) костюм идёт (подходит).</li>
+          </ul>
+          <div class="highlight-box">
+            Большинство слов русского языка — <b>многозначные</b>. Однозначность — свойство специальных терминов и имён собственных.
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">2</span> Прямое и переносное значение</h3>
+          <ul>
+            <li><span class="term cyan">Прямое значение</span> — основное, буквальное, первое по значению. Это то, что слово обозначает напрямую.<br>
+              Пример: <b>золотое кольцо</b> — кольцо из золота.</li>
+            <li><span class="term yellow">Переносное значение</span> — производное, основано на сходстве или ассоциации.<br>
+              Пример: <b>золотые руки</b> — умелые, хорошие руки (не из золота!).<br>
+              Ещё: <b>горькая правда</b>, <b>железное здоровье</b>, <b>мороз по коже</b>.</li>
+          </ul>
+          <div class="highlight-box">
+            Переносные значения часто становятся <b>основой фразеологизмов</b>: «сесть в лужу», «бить баклуши», «водить за нос».
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">3</span> Синонимы</h3>
+          <p><span class="term">Синонимы</span> — слова, разные по звучанию, но <b>близкие по значению</b>.</p>
+          <ul>
+            <li><b>Большой</b> — огромный, громадный, крупный, здоровенный</li>
+            <li><b>Бежать</b> — мчаться, лететь, нестись, спешить</li>
+            <li><b>Красивый</b> — прекрасный, прелестный, симпатичный, живописный</li>
+            <li><b>Думать</b> — размышлять, мыслить, соображать, полагать</li>
+          </ul>
+          <p>Синонимы помогают избежать повторов и точнее выражать оттенки смысла.</p>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">4</span> Антонимы</h3>
+          <p><span class="term">Антонимы</span> — слова, <b>противоположные по значению</b>.</p>
+          <ul>
+            <li>День — ночь, свет — тьма, добро — зло</li>
+            <li>Горячий — холодный, быстрый — медленный</li>
+            <li>Говорить — молчать, любить — ненавидеть</li>
+            <li>Приходить — уходить, смеяться — плакать</li>
+          </ul>
+          <div class="highlight-box">
+            Антонимы часто используются в <b>антитезе</b> — художественном противопоставлении: «Ученье — свет, а неученье — тьма».
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">5</span> Омонимы</h3>
+          <p><span class="term">Омонимы</span> — слова, <b>одинаковые по звучанию и написанию</b>, но совершенно разные по смыслу.</p>
+          <ul>
+            <li><b>Коса</b> — 1) волосы, 2) инструмент, 3) песчаная отмель</li>
+            <li><b>Ключ</b> — 1) от замка, 2) родник, 3) гаечный ключ, 4) скрипичный ключ</li>
+            <li><b>Наряд</b> — 1) платье, 2) приказ</li>
+            <li><b>Мир</b> — 1) отсутствие войны, 2) Вселенная</li>
+          </ul>
+          <p>Виды омонимов: <span class="term cyan">омофоны</span> (слышатся одинаково: луг — лук), <span class="term green">омоформы</span> (совпадают в отдельных формах: лечу — от «лечить» и «лететь»).</p>
+        </div>
+
+        <div class="slide-card">
+          <h3><span class="num">6</span> Исконно русские и заимствованные слова</h3>
+          <p>По происхождению лексика делится на две большие группы:</p>
+          <div class="grid-2" style="margin-top:12px;">
+            <div class="zone-card">
+              <div class="zone-name">🇷🇺 Исконно русские</div>
+              <div class="zone-act">Возникли в самом русском языке или достались от предков — древнерусского, праславянского, индоевропейского.<br><br><b>Примеры:</b> мать, отец, вода, лес, небо, сердце, рука, думать, говорить, белый, красный.</div>
+            </div>
+            <div class="zone-card">
+              <div class="zone-name">🌍 Заимствованные</div>
+              <div class="zone-act">Пришли из других языков в разные эпохи.<br><br>
+              • Из старославянского: <b>град, глас, брег</b><br>
+              • Из тюркских: <b>деньги, базар, арбуз, штаны</b><br>
+              • Из греческого: <b>школа, тетрадь, фонарь</b><br>
+              • Из латинского: <b>революция, конституция</b><br>
+              • Из французского: <b>пальто, абажур, пляж</b><br>
+              • Из английского: <b>компьютер, футбол, менеджер</b>
+              </div>
+            </div>
+          </div>
+          <div class="highlight-box">
+            <b>Признаки заимствования:</b> начальные буквы <b>а, э</b> (<b>а</b>ллея, <b>э</b>кзамен), удвоенные согласные (<b>а</b>ллея, ко<strong>лл</strong>ектив), суффиксы <b>-ция, -мент, -ер</b>.
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <button class="nav-btn" id="rus-home">← К темам</button>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+          <div class="progress-text">Все разделы лексики рассмотрены</div>
+        </div>
+        <button class="nav-btn" id="rus-next" disabled>Далее →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   STARS CANVAS — параллакс-звёзды
+============================================================ */
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = window.innerWidth;
+let H = canvas.height = window.innerHeight;
+let mouseX = W/2, mouseY = H/2;
+
+const stars = [];
+const STAR_COUNT = 260;
+const COLORS = ['#ffffff', '#c4b5fd', '#a5f3fc', '#fbcfe8', '#fde68a'];
+
+function rand(min, max) { return Math.random() * (max - min) + min; }
+
+function createStar() {
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    baseX: 0,
+    baseY: 0,
+    size: rand(0.4, 2.4),
+    depth: rand(0.2, 1), // для параллакса
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    twinkleSpeed: rand(0.01, 0.04),
+    twinklePhase: Math.random() * Math.PI * 2,
+    drift: rand(-0.05, 0.05)
+  };
+}
+
+for (let i = 0; i < STAR_COUNT; i++) {
+  const s = createStar();
+  s.baseX = s.x;
+  s.baseY = s.y;
+  stars.push(s);
+}
+
+window.addEventListener('resize', () => {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+});
+window.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+function drawStars() {
+  ctx.clearRect(0, 0, W, H);
+  const cx = (mouseX - W/2) / W;
+  const cy = (mouseY - H/2) / H;
+
+  stars.forEach(s => {
+    s.twinklePhase += s.twinkleSpeed;
+    const twinkle = 0.5 + 0.5 * Math.sin(s.twinklePhase);
+    const alpha = 0.3 + 0.7 * twinkle;
+
+    // параллакс
+    const offsetX = -cx * 40 * s.depth;
+    const offsetY = -cy * 40 * s.depth;
+
+    s.baseY += s.drift * s.depth;
+    if (s.baseY > H + 10) { s.baseY = -10; s.baseX = Math.random() * W; }
+    if (s.baseY < -10) { s.baseY = H + 10; s.baseX = Math.random() * W; }
+
+    const dx = s.baseX + offsetX;
+    const dy = s.baseY + offsetY;
+
+    // ореол
+    const grad = ctx.createRadialGradient(dx, dy, 0, dx, dy, s.size * 6);
+    grad.addColorStop(0, hexToRgba(s.color, alpha * 0.7));
+    grad.addColorStop(1, hexToRgba(s.color, 0));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(dx, dy, s.size * 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ядро
+    ctx.fillStyle = hexToRgba(s.color, alpha);
+    ctx.beginPath();
+    ctx.arc(dx, dy, s.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    // крестик у ярких звёзд
+    if (s.size > 1.8) {
+      ctx.strokeStyle = hexToRgba(s.color, alpha * 0.4);
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(dx - s.size * 4, dy);
+      ctx.lineTo(dx + s.size * 4, dy);
+      ctx.moveTo(dx, dy - s.size * 4);
+      ctx.lineTo(dx, dy + s.size * 4);
+      ctx.stroke();
+    }
+  });
+  requestAnimationFrame(drawStars);
+}
+function hexToRgba(hex, a) {
+  const c = hex.replace('#','');
+  const r = parseInt(c.substring(0,2),16);
+  const g = parseInt(c.substring(2,4),16);
+  const b = parseInt(c.substring(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+drawStars();
+
+/* ============================================================
+   SHOOTING STARS — падающие звёзды
+============================================================ */
+function spawnShootingStar() {
+  const star = document.createElement('div');
+  star.className = 'shooting-star';
+  const startX = Math.random() * W * 0.6;
+  const startY = Math.random() * H * 0.5;
+  star.style.left = startX + 'px';
+  star.style.top = startY + 'px';
+  document.body.appendChild(star);
+
+  const angle = 25 + Math.random() * 10;
+  const distance = 400 + Math.random() * 300;
+  const duration = 1200 + Math.random() * 800;
+
+  star.animate([
+    { transform: 'translate(0,0) rotate(' + angle + 'deg)', opacity: 0 },
+    { transform: 'translate(20px,10px) rotate(' + angle + 'deg)', opacity: 1, offset: 0.1 },
+    { transform: 'translate(' + (distance * Math.cos(angle * Math.PI/180)) + 'px, ' +
+                                 (distance * Math.sin(angle * Math.PI/180)) + 'px) rotate(' + angle + 'deg)',
+      opacity: 0 }
+  ], { duration, easing: 'cubic-bezier(0.3, 0, 0.7, 1)' });
+
+  setTimeout(() => star.remove(), duration);
+}
+setInterval(spawnShootingStar, 4000);
+setTimeout(spawnShootingStar, 1500);
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+const screens = {
+  home: document.getElementById('screen-home'),
+  history: document.getElementById('screen-history'),
+  biology: document.getElementById('screen-biology'),
+  russian: document.getElementById('screen-russian')
+};
+const backBtn = document.getElementById('backBtn');
+
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+  backBtn.style.display = name === 'home' ? 'none' : 'inline-flex';
+  // scroll to top of slide-body
+  screens[name].querySelectorAll('.slide-body').forEach(sb => sb.scrollTop = 0);
+}
+
+document.querySelectorAll('.topic-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const topic = card.dataset.topic;
+    showScreen(topic);
+  });
+});
+
+backBtn.addEventListener('click', () => showScreen('home'));
+document.getElementById('history-home').addEventListener('click', () => showScreen('home'));
+document.getElementById('bio-home').addEventListener('click', () => showScreen('home'));
+document.getElementById('rus-home').addEventListener('click', () => showScreen('home'));
+
+/* Keyboard navigation: Escape — home, Arrows — scroll slides */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') showScreen('home');
+});
+
+/* Keyboard arrows inside slides — scroll up/down */
+document.addEventListener('keydown', e => {
+  const active = document.querySelector('.screen.active');
+  if (!active || active.id === 'screen-home') return;
+  const body = active.querySelector('.slide-body');
+  if (!body) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    body.scrollBy({ top: 180, behavior: 'smooth' });
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    body.scrollBy({ top: -180, behavior: 'smooth' });
+  }
+});
+
+/* Parallax tilt on topic cards */
+document.querySelectorAll('.topic-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `translateY(-10px) scale(1.02) perspective(800px) rotateX(${ -y * 6 }deg) rotateY(${ x * 6 }deg)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
+});
+</script>
 </body>
 </html>
